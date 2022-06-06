@@ -17,6 +17,34 @@ Izmax = Ptot/Uz => 0,5 Watt/3.3V = 0.15 Ampere
 Izmin = 0,1 * Izmax = 0,1 * 0,1 Ampere = 0.015 Ampere
 Itot = izmax + Izmin = 0,166 Ampere
 Rv = (Utot(max dynamo) - Uz)/Itot = (ca 30V - 3,3V)/0,166 Ampere = 160 Ohm
+Take 220 Ohm. May be 1K would be better
 
-Take a higher one 
+Measuring:
+
+Peak 3.7 Volts ??
+
+### Microcontroller comparator
+On slow revolutions the output of the dynamo is about 200 mV.
+So wheel has to have a minimal rpm for generate pulses.
+we Set the minimal pulse voltage to 300 mv.
+Therfore we use a voltage divider for the comparator Input of the MCU.
+
+https://www.digikey.ch/de/resources/conversion-calculators/conversion-calculator-voltage-divider
+
+10000 Ohm <=> 680 Ohm 
+5 V <=> 0,318 Volt
+
+OR
+
+0000 Ohm <=> 560 Ohm 
+5 V <=> 0,318 Volt
+
+We use a microcontroller voltage of 5V (depending of the USB serial Converter VCC).
+The Microntroller is a ATMEGA48.
+
+
+
+
+
+
 
