@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FirstFragment">
+
+    <Button
+        android:id="@+id/buttonReset"
+        android:layout_width="139dp"
+        android:layout_height="49dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="677dp"
+        android:layout_marginEnd="222dp"
+        android:layout_marginBottom="5dp"
+        android:text="@string/Reset"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textviewVelocity"
+        android:layout_width="348dp"
+        android:layout_height="188dp"
+        android:layout_marginStart="41dp"
+        android:layout_marginTop="73dp"
+        android:layout_marginEnd="52dp"
+        android:layout_marginBottom="473dp"
+        android:text="@string/text_velocity"
+        android:textAlignment="center"
+        android:textSize="60sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.333"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.333" />
+
+    <Button
+        android:id="@+id/buttonSettings"
+        android:layout_width="148dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="221dp"
+        android:layout_marginTop="680dp"
+        android:layout_marginEnd="42dp"
+        android:layout_marginBottom="6dp"
+        android:text="@string/text_settings"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewDistance"
+        android:layout_width="348dp"
+        android:layout_height="185dp"
+        android:layout_marginStart="43dp"
+        android:layout_marginTop="279dp"
+        android:layout_marginEnd="52dp"
+        android:layout_marginBottom="310dp"
+        android:ems="10"
+        android:text="@string/text_distance"
+        android:textAlignment="center"
+        android:textSize="60sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.375"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.139" />
+
+    <TextView
+        android:id="@+id/textViewInfo"
+        android:layout_width="354dp"
+        android:layout_height="195dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="451dp"
+        android:layout_marginEnd="52dp"
+        android:layout_marginBottom="72dp"
+        android:text="@string/text_Info"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.488"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+</androidx.constraintlayout.widget.ConstraintLayout>
