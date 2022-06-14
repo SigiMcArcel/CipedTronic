@@ -2,18 +2,36 @@
     <string name="app_name">cipedTronic</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
+    <string name="main_fragment_label">Tour</string>
+    <string name="settings_fragment_label">Settings</string>
+    <string name="tour_fragment_label">Tour Data</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 
-    <string name="Reset">Reset</string>
-    <string name="text_settings">Settings</string>
+    <string name="text_reset_button">Reset</string>
+    <string name="text_previous_button">Reset</string>
+    <string name="text_settings_button">Settings</string>
+    <string name="text_tour_button">Tour</string>
+    <string name="text_save_button">Save</string>
     <string name="text_velocity">%1$f Km/h</string>
     <string name="text_distance">%1$f Km</string>
     <string name="text_Info">%1$s</string>
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <string name="settings_pulses_per_revolution">Pulses per revolution</string>
+    <string name="settings_wheel_radius_mm">Wheel radius</string>
+
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
 </resources>

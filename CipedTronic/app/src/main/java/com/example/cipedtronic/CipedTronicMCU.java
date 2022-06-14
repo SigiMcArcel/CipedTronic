@@ -88,7 +88,7 @@ public class CipedTronicMCU implements USBSerialListener{
 
     public String getDistance()
     {
-        return String.format("%.3f",_Distance);
+        return String.format("%.1f",_Distance);
     }
 
     public String getPulses()
