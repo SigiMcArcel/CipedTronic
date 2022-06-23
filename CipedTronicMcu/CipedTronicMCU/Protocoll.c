@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Platform/UART.h"
+#include "Platform/USBSerial.h"
 #include "Platform/Comparator.h"
 #include "Platform/Counter.h"
 
@@ -20,19 +20,19 @@ void ProtocollHandler()
 	uint32_t CounterPerSecond = CounterGetCounterPerSecond();
 	uint32_t MaxCounterPerSecond = CounterGetMaxCounterPerSecond();
 	
-	UARTPuts("<CIP");
-	UARTPutsHex32(Counter);
-	UARTPuts(" ");
-	UARTPutsHex32(CounterPerSecond);
-	UARTPuts(" ");
-	UARTPutsHex32(MaxCounterPerSecond);
-	UARTPuts(">r\n");
+	USBSerialPuts("<CIP");
+	USBSerialPutsHex32(Counter);
+	USBSerialPuts(" ");
+	USBSerialPutsHex32(CounterPerSecond);
+	USBSerialPuts(" ");
+	USBSerialPutsHex32(MaxCounterPerSecond);
+	USBSerialPuts(">\r\n");
 	ProtocolRxHandler();
 }
 
 void ProtocolRxHandler()
 {
-	char c = UARTGetchar();
+	char c = USBSerialGetchar();
 	if(c == (char)-1)
 	{
 		return;
@@ -48,7 +48,7 @@ void ProtocolRxHandler()
 			}
 			else
 			{
-				UARTPuts("<Z>");
+				USBSerialPuts("<Z>\r\n");
 			}
 			break;
 		}
@@ -59,13 +59,13 @@ void ProtocolRxHandler()
 				case 'A':
 				{
 					CounterResetCounter();
-					UARTPuts("<A>\n");
+					USBSerialPuts("<A>\r\n");
 					_State = 10;
 					break;
 				}
 				default:
 				{
-					UARTPuts("<Z>\n");
+					USBSerialPuts("<Z>\r\n");
 					_State = 10;
 				}
 			}//switch c

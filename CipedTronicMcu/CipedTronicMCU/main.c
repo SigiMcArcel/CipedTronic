@@ -9,10 +9,10 @@
 #include "Platform/Timer.h"
 #include "Platform/GPIO.h"
 //#include "Platform/Register.h"
-#include "Platform/UART.h"
 #include "Platform/Comparator.h"
 #include "Protocoll.h"
 #include "Platform/Counter.h"
+#include "Platform/USBSerial.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,10 +21,10 @@ static volatile uint32_t _LastTimerTick = 0;
 
 int main (void)
 {
+	GPIOInit();
 	TimerInit();
-	UARTInit();
 	CounterInit();
-	
+	USBSerialInit();
 	
 	while(1)
 	{
@@ -32,8 +32,10 @@ int main (void)
 		uint32_t diff = tick - _LastTimerTick;
 		if(diff >= 500)
 		{
+			GPIOBToggle(5);
 			_LastTimerTick = tick;
-			ProtocollHandler();
+			//ProtocollHandler();
 		}
+		CounterHandler();
 	}
 }

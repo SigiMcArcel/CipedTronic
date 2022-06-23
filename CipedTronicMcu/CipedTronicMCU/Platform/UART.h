@@ -4,7 +4,7 @@
 #define TX_BUFFER_SIZE 100
 #define RX_BUFFER_SIZE 10
 #define BAUDRATE 38400
-#define F_CPU 8000000
+
 
 void UARTInit(void);
 void UARTPutchar(char c);

@@ -21,13 +21,7 @@ static volatile uint32_t _LastTimerTick = 0;
 
 static void CounterTimerCB(void);
 
-void CounterInit()
-{
-	
-	TCCR1B = (1<<ICES1) | (1<<CS10) | (1<<CS11) | (1<<CS12);
-	TimerSetCallback(CounterTimerCB);
-}
-uint32_t CounterGetCounter()
+void CounterHandler()
 {
 	uint16_t tmpCount = TCNT1;
 	
@@ -40,6 +34,15 @@ uint32_t CounterGetCounter()
 		_Counter +=  0xffffffff - _LastCounterAdding + tmpCount;
 	}
 	_LastCounterAdding = tmpCount;
+}
+void CounterInit()
+{
+	
+	TCCR1B = (1<<ICES1) | (1<<CS10) | (1<<CS11) | (1<<CS12);
+	TimerSetCallback(CounterTimerCB);
+}
+uint32_t CounterGetCounter()
+{
 	return _Counter;
 }
 
@@ -66,16 +69,6 @@ void CounterTimerCB(void)
 {
 	uint32_t tick = TimerGetTick();
 	uint32_t diff = tick - _LastTimerTick;
-	//uint8_t aco = (ACSR & (1<<ACO));
-	//if(!aco)
-	//{
-		//UpFlag = 0;
-	//}
-	//if(aco && !UpFlag)
-	//{
-		//_Counter++;
-		//UpFlag = 1;
-	//}
 	
 	if(diff >= 1000)
 	{

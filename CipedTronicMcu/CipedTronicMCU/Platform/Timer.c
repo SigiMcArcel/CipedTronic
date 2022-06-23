@@ -11,6 +11,7 @@
 #include "GPIO.h"
 
 static volatile uint32_t msTick = 1;
+static volatile uint32_t Tick = 1; //0,00004 s
 static volatile int timerElapsedStart = 0;
 static volatile int timerElapsedState = 0;
 static timercallback_t cbTimer = 0;
@@ -27,7 +28,7 @@ void TimerInit(void)
 	TCCR0B = 0; // set TCCR0B register to 0
 	TCNT0  = 0; // set counter value to 0
 	//Timer settings for 1 ms CLK8 Fuse not set
-	OCR0A = 124; // set compare match register
+	OCR0A = 250; // set compare match register
 	TCCR0A |= (1 << WGM01); // turn on CTC mode
 	
 	

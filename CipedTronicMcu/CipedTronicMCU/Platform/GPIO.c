@@ -13,15 +13,15 @@ void GPIOInit(void)
 {
 	DDRB = 0x01;
 	DDRC = 0x00;
-	DDRD = 0x00;
+	DDRD = 0x20;
 }
 void GPIOBSet(uint8_t pin)
 {
-	PORTB |= (1<<pin);
+	PORTD |= (1<<pin);
 }
 void GPIOBReset(uint8_t pin)
 {
-	PORTB &= ~(1<<pin);
+	PORTD &= ~(1<<pin);
 }
 void GPIOBToggle(uint8_t pin)
 {

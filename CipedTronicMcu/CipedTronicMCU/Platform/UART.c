@@ -31,40 +31,57 @@ char NibbleToChar(uint8_t nibble)
 void UARTInit(void)
 {
 	cli();
-	
 	//No Parity UPM01 UPM00 = 0
 	//asynchrony UART UMSEL01 UMSEL00 = 0
 	//stop bit USBS0 = 0
 	//8 Bit  UCSZ02 = 0 UCSZ01  = 1 UCSZ00 = 1
 	//UCSR0A |= (1 << U2X0);
+	#if defined (__AVR_ATmega48__)
 	UCSR0C |= (1 << UCSZ01)|(1 << UCSZ00) ;
 	//Baud rate 38.4k 12 0.2% on 8 Mhz
 	
 	UCSR0B |= (1<<TXEN0) | (1<<RXEN0);
 	UBRR0L = 12;
 	UBRR0H = 0;
+	#elif defined (__AVR_ATmega32U4__)
+	UCSRC |= (1 << UCSZ1)|(1 << UCSZ00) ;
+	//Baud rate 38.4k 12 0.2% on 8 Mhz
+	
+	UCSR0B |= (1<<TXEN0) | (1<<RXEN0);
+	UBRR0L = 12;
+	UBRR0H = 0;
+	#endif
 	sei();
 }
 
 void UARTLLPutchar(char c)
 {
+	#if defined (__AVR_ATmega48__)
 	UDR0 = c;
+	#elif defined (__AVR_ATmega32U4__)
+	#endif
 }
 
 void UARTPutchar(char c)
 {
+	#if defined (__AVR_ATmega48__)
 	while((UCSR0A & (1 << UDRE0)) == 0){};
 	UDR0 = c;
+	#elif defined (__AVR_ATmega32U4__)
+	#endif
 }
 
 char UARTGetchar(void)
 {
-	
+	#if defined (__AVR_ATmega48__)
 	if((UCSR0A & (1 << RXC0)) > 0)
 	{
 		return (char)UDR0;
 	}
+	#elif defined (__AVR_ATmega32U4__)
+	#endif
 	return (char)-1;
+	
 	
 }
 

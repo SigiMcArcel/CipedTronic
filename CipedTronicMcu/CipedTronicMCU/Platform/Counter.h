@@ -15,6 +15,7 @@ uint32_t CounterGetCounter();
 uint32_t CounterGetCounterPerSecond();
 uint32_t CounterGetMaxCounterPerSecond();
 void CounterResetCounter();
+void CounterHandler();
 
 
 #endif /* COUNTER_H_ */
