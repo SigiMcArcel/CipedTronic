@@ -5,7 +5,6 @@
 #define RX_BUFFER_SIZE 10
 #define BAUDRATE 38400
 
-
 void UARTInit(void);
 void UARTPutchar(char c);
 char UARTGetchar(void);

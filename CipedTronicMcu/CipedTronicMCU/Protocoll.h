@@ -8,7 +8,11 @@
 
 #ifndef PROTOCOLL_H_
 #define PROTOCOLL_H_
-
+#ifdef __cplusplus
+extern "C" {
+	#endif
 void ProtocollHandler();
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* PROTOCOLL_H_ */

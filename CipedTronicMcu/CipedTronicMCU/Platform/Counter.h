@@ -9,7 +9,6 @@
 #ifndef COUNTER_H_
 #define COUNTER_H_
 
-
 void CounterInit();
 uint32_t CounterGetCounter();
 uint32_t CounterGetCounterPerSecond();

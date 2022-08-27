@@ -11,33 +11,52 @@
 static int toggleState = 0;
 void GPIOInit(void)
 {
-	DDRB = 0x01;
+	//set Direction
+	DDRB = 0x00;
 	DDRC = 0x00;
-	DDRD = 0x20;
+	DDRD = 0x00;
+	DDRE = 0x00;
+	DDRF = 0x00;
 }
-void GPIOBSet(uint8_t pin)
+
+void GPIOSetDirection(uint8_t pin,volatile uint8_t* port,uint8_t direction)
 {
-	PORTD |= (1<<pin);
+	if(direction == GPIO_DIR_IN)
+	{
+		*port &= ~(1<<pin);
+	}
+	else
+	{
+		*port |= (1<<pin);
+	}
+	
 }
-void GPIOBReset(uint8_t pin)
+void GPIOSet(uint8_t pin,volatile uint8_t* port)
 {
-	PORTD &= ~(1<<pin);
+	
+	*port |= (1<<pin);
 }
-void GPIOBToggle(uint8_t pin)
+void GPIOReset(uint8_t pin,volatile uint8_t* port)
+{
+
+	*port &= ~(1<<pin);
+}
+void GPIOToggle(uint8_t pin,volatile uint8_t* port)
 {
 	if(toggleState)
 	{
-		GPIOBSet(pin);
+		GPIOSet(pin,port);
 		toggleState = 0;
 	}
 	else
 	{
-		GPIOBReset(pin);
+		GPIOReset(pin,port);
 		toggleState = 1;
 	}
 }
 
-uint8_t GPIOBGet(uint8_t pin)
+uint8_t GPIOGet(uint8_t pin,volatile uint8_t*  port)
 {
-	return PORTB &(1<<pin);
+	
+	return *port &(1<<pin);
 }

@@ -12,7 +12,7 @@ import android.widget.Toast;
 public class CipedTronicMCU implements USBSerialListener{
     USBSerialConnector _UsbConnector;
     double pi = 3.14159265358979;
-    double _PulsesPerRevolution = 14.0;
+    double _PulsesPerRevolution = 18.0;
     double _RadiusOfWheelMM = 365.0;
     double _Velocity = 0.0;
     double _VelocityMax = 0.0;
@@ -27,9 +27,10 @@ public class CipedTronicMCU implements USBSerialListener{
     String rxBuffer = "";
 
     Activity _Activity;
+    boolean _deviceReady = false;
+
     public CipedTronicMCU(Activity Activity)
     {
-
 
         _Activity = Activity;
         _UsbConnector = USBSerialConnector.getInstance();
@@ -52,6 +53,7 @@ public class CipedTronicMCU implements USBSerialListener{
                 _VelocityMax = (double) _PulsesPerSecondMax * _RadiusOfWheelMM / 1000 * 2 * pi * 3600 / _PulsesPerRevolution / 1000;
                 _Distance = (double) _Pulses * _RadiusOfWheelMM / 1000 * 2 * pi / _PulsesPerRevolution / 1000;
                 _Revolutions = _Pulses / _PulsesPerRevolution;
+                    _deviceReady = true;
                 }
                 catch(Exception exp)
                 {
@@ -63,17 +65,18 @@ public class CipedTronicMCU implements USBSerialListener{
 
     @Override
     public void onErrorReceived(String data) {
-
+        Toast.makeText(_Activity.getApplicationContext(),data,Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onDeviceReady(ResponseStatus responseStatus) {
 
+
     }
 
     @Override
     public void onDeviceDisconnected() {
-
+        _deviceReady = false;
     }
 
     public String getVelocity()
@@ -88,7 +91,7 @@ public class CipedTronicMCU implements USBSerialListener{
 
     public String getDistance()
     {
-        return String.format("%.1f",_Distance);
+        return String.format("%.2f",_Distance);
     }
 
     public String getPulses()
@@ -110,6 +113,7 @@ public class CipedTronicMCU implements USBSerialListener{
     {
         _PulsesPerRevolution = p;
     }
+    public boolean getDeviceReady(){return _deviceReady;}
 
     public void setMCUId(Integer id)
     {
@@ -120,12 +124,15 @@ public class CipedTronicMCU implements USBSerialListener{
     public void ResetMCU()
     {
         String command = ">A";
-        _UsbConnector.write(command.getBytes(),100);
+        if(_deviceReady) {
+            USBSerialConnector.getInstance().writeAsync(command.getBytes());
+        }
     }
     public void Resume()
     {
         _UsbConnector.setUsbSerialListener(this);
-        _UsbConnector.init(_Activity,38400);
+        _UsbConnector.init(_Activity,115200);
+
     }
 
     public void Pause()

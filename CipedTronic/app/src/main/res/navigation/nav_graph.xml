@@ -11,10 +11,10 @@
         android:label="@string/settings_fragment_label"
         tools:layout="@layout/fragment_main">
         <action
-            android:id="@+id/action_MainFragment_to_SettingsFragment"
+            android:id="@+id/action_MainFragment_to_TourFragment"
             app:destination="@id/TourFragment" />
         <action
-            android:id="@+id/action_MainFragment_to_SettingsFragment2"
+            android:id="@+id/action_MainFragment_to_SettingsFragment"
             app:destination="@id/SettingsFragment" />
     </fragment>
     <fragment

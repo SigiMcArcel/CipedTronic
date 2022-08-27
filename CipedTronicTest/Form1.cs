@@ -13,7 +13,7 @@ namespace CipedTest
 {
     public partial class Form1 : Form
     {
-        private SerialPort port = new SerialPort("COM5", 38400, Parity.None, 8, StopBits.One);
+        private SerialPort port = new SerialPort("COM13", 115200, Parity.None, 8, StopBits.One);
         private bool xbusy = false;
         private int step = 0;
 
@@ -26,6 +26,7 @@ namespace CipedTest
         public Form1()
         {
             InitializeComponent();
+            port.NewLine = "\n";
             port.Open();
         }
 
@@ -61,20 +62,20 @@ namespace CipedTest
 
 
                     UInt32 pulses = Convert.ToUInt32(tok[0], 16);
-                    double fval = (double)pulses * (double)0.37 * 2 * Math.PI / 14 / 1000;
+                    double fval = (double)pulses * (double)0.365 * 2 * Math.PI / 18 / 1000;
                     KM = Convert.ToString(fval);
-                    Revol = Convert.ToString(pulses / 14);
+                    Revol = Convert.ToString(pulses / 18);
                     Pulses = Convert.ToString(pulses);
 
 
                     UInt32 pulsesPerSeccond = Convert.ToUInt32(tok[1], 16);
-                    fval = (double)pulsesPerSeccond * (double)0.37 * 2 * Math.PI * 3600 / 14 / 1000;
+                    fval = (double)pulsesPerSeccond * (double)0.365 * 2 * Math.PI * 3600 / 18 / 1000;
                     KMH = Convert.ToString(fval);
 
 
 
                     UInt32 pulsesPerSeccondMax = Convert.ToUInt32(tok[2], 16);
-                    fval = (double)pulsesPerSeccondMax * (double)0.37 * 2 * Math.PI * 3600 / 14 / 1000;
+                    fval = (double)pulsesPerSeccondMax * (double)0.365 * 2 * Math.PI * 3600 / 18 / 1000;
                     MAXKMH = Convert.ToString(fval);
                     
 
@@ -85,7 +86,8 @@ namespace CipedTest
 
         private void button1_Click(object sender, EventArgs e)
         {
-            port.Write(">A");
+            //port.Write(">A");
+            port.Write("<CIP00000012 000000018 00000020>\n");
         }
     }
 }
