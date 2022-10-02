@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="General">
+        <EditTextPreference
+            android:key="SetPulsesPerRev"
+            android:title="@string/settings_pulses_per_revolution"
+            android:summary="..."
+            android:inputType="number"
+            android:maxLength="2"
+            /><EditTextPreference
+        android:key="SetWheelRadius"
+        android:title="@string/settings_wheel_radius_mm"
+        android:summary="..."
+        android:inputType="number"
+        android:maxLength="2"
+        />
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainFragment">
+
+    <TextView
+        android:id="@+id/textviewVelocity"
+        android:layout_width="384dp"
+        android:layout_height="189dp"
+        android:layout_marginTop="36dp"
+        android:text="@string/text_velocity"
+        android:textAlignment="center"
+        android:textSize="60sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewDistance"
+        android:layout_width="385dp"
+        android:layout_height="170dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/text_distance"
+        android:textAlignment="center"
+        android:textSize="60sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textviewVelocity" />
+
+    <LinearLayout
+        android:layout_width="402dp"
+        android:layout_height="85dp"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.444"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewInfo">
+
+        <Button
+            android:id="@+id/buttonReset"
+            android:layout_width="115dp"
+            android:layout_height="74dp"
+            android:text="@string/text_reset_button" />
+
+        <Button
+            android:id="@+id/buttonTour"
+            android:layout_width="118dp"
+            android:layout_height="75dp"
+            android:text="@string/text_tour_button"
+            tools:layout_editor_absoluteX="280dp"
+            tools:layout_editor_absoluteY="645dp" />
+
+        <Button
+            android:id="@+id/buttonSettings"
+            android:layout_width="wrap_content"
+            android:layout_height="75dp"
+            android:text="@string/text_settings_button"
+            tools:layout_editor_absoluteX="123dp"
+            tools:layout_editor_absoluteY="554dp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewInfo"
+        android:layout_width="386dp"
+        android:layout_height="174dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/text_Info"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewDistance" />
+</androidx.constraintlayout.widget.ConstraintLayout>
