@@ -102,8 +102,8 @@ void USBSerialPutsHex32(uint32_t val)
 
 void USBSerialPutsLong(uint32_t val)
 {
-	char* str;
-	str = ultoa(val,NULL,10);
+	char str[20];
+	ultoa(val,str,10);
 	USBSerialPuts(str);
 }
 

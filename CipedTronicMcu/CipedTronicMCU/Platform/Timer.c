@@ -21,6 +21,16 @@ void TimerSetCallback(timercallback_t cb)
 	cbTimer = cb;
 }
 
+void TimerWait(uint32_t ms)
+{
+	uint32_t start = TimerGetTick();
+	uint32_t diff = 0;
+	while(diff <= ms)
+	{
+		diff = TimerGetTick() - start;
+	}
+	
+}
 void TimerInit(void)
 {
 	cli();

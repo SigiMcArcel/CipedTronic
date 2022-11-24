@@ -16,7 +16,7 @@ void TimerInit(void);
 int TimerElapsed(uint32_t millsecond);
 uint32_t TimerGetTick(void);
 void TimerSetCallback(timercallback_t cb);
-
+void TimerWait(uint32_t ms);
 
 
 #endif /* TIMER_H_ */

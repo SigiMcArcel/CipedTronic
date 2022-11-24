@@ -25,11 +25,11 @@
 #define SPI_CLKDIV_128 3
 
 void SPIInit(uint8_t cpol,uint8_t cpha,uint8_t clkMhz,uint8_t dataOrder,uint8_t poll);
-int16_t SPIWriteByte(uint8_t data);
-int16_t SPIReadByte(void);
-int16_t SPIWrite(uint8_t *buffer, uint8_t size);
-int16_t SPIRead(uint8_t *buffer, uint8_t size);
-int16_t SPITransfer(uint8_t *txbuffer,uint8_t *rxbuffer, uint8_t size);
+void SPIWriteByte(uint8_t data);
+uint8_t SPIReadByte(void);
+int8_t SPIWrite(uint8_t *buffer, uint16_t size);
+int8_t SPIRead(uint8_t *buffer, uint16_t size);
+int8_t SPITransfer(uint8_t *txbuffer,uint8_t *rxbuffer, uint16_t size);
 
 
 

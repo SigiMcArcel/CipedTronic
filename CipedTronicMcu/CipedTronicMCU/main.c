@@ -18,30 +18,54 @@
 #include <stdlib.h>
 #include <string.h>
 static volatile uint32_t _LastTimerTick = 0;
-
+static volatile uint32_t _Delay = 0;
 
 int main (void)
 {
 	GPIOInit();
 	TimerInit();
-	CounterInit();
+	//CounterInit();
 	USBSerialInit();
-	BLEInit(100,100);
-	GPIOSetDirection(5,&DDRD,GPIO_DIR_OUT);
+	
+	BLESetDeviceName("ADA_BLE");
+	GPIOSetDirection(5,&DDRD,GPIO_DIR_OUT);//tx
+	GPIOSetDirection(0,&DDRB,GPIO_DIR_OUT);//rx
+	GPIOSetDirection(7,&DDRC,GPIO_DIR_OUT);//PW led
+	
+	
 	while(!USBSerialConnected()){}
-		
+
 	USBSerialPuts("Hallo\r\n");
+	GPIOSet(5,&PORTD);
+	GPIOSet(0,&PORTB);
+	GPIOSet(7,&PORTC);
+	
+	TimerWait(6000);
+	
+	GPIOReset(5,&PORTD);
+	GPIOReset(0,&PORTB);
+	GPIOReset(7,&PORTC);
+	BLEInit(100,100);
+	
 	while(1)
 	{
 		uint32_t tick = TimerGetTick();
 		uint32_t diff = tick - _LastTimerTick;
+		
+		
 		if(diff >= 500)
 		{
-			GPIOToggle(5,&PORTD);
+			GPIOToggle(7,&PORTC);
 			_LastTimerTick = tick;
+			//if(BLEIsReady())
+			//{
+				//BLEPuts("test");
+			//}
+			
 			//ProtocollHandler();
-			BLEProcess();
+			//
 		}
+		BLEProcess();
 		
 	}
 }
