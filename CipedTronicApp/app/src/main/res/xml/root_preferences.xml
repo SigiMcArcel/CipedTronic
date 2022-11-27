@@ -1,0 +1,25 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/Bicycle_header">
+
+        <EditTextPreference
+            app:key="pulseperrevolution"
+            app:persistent="true"
+            app:title="@string/PulsesPerRevultion_title"
+            app:useSimpleSummaryProvider="true"/>
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Bluetooth">
+
+        <EditTextPreference
+            android:defaultValue="Default value"
+            android:key="bluetooth_Address"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Bluetooth Address"
+            android:enabled="false"
+            android:selectable="false" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

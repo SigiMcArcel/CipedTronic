@@ -1,6 +1,8 @@
 package com.example.cipedtronic;
 
-public interface USBSerialListener {
+import java.util.List;
+
+public interface IBLEListener {
     void onDataReceived(byte[] data);
 
     void onErrorReceived(String data);
@@ -8,4 +10,7 @@ public interface USBSerialListener {
     void onDeviceReady(ResponseStatus responseStatus);
 
     void onDeviceDisconnected();
+
+    void onScanResult(List<CipedTronicDevice> devices);
+
 }
