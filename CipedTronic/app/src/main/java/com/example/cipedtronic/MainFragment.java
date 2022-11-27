@@ -14,10 +14,11 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.cipedtronic.databinding.FragmentMainBinding;
 import android.widget.TextView;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainFragment extends Fragment {
+public class MainFragment extends Fragment implements ICipedTronicMCU{
 
     private FragmentMainBinding binding;
     private CipedTronicMCU _CipedTronicMCU;
@@ -31,8 +32,9 @@ public class MainFragment extends Fragment {
             LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
-        _CipedTronicMCU = new CipedTronicMCU(getActivity());
-        _CipedTronicMCU.Resume();
+        _CipedTronicMCU = CipedTronicMCU.createInstance(getActivity());
+        _CipedTronicMCU.initialize();
+        _CipedTronicMCU.RegisterMCUInterface(this);
 
         binding = FragmentMainBinding.inflate(inflater, container, false);
 
@@ -136,12 +138,30 @@ public class MainFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        _CipedTronicMCU.DeregisterMCUInterface(this);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        _CipedTronicMCU.Resume();
+
+    }
+
+
+    @Override
+    public void onDeviceScanResult(List<CipedTronicDevice> devices)
+    {
+
+    }
+    @Override
+    public void onDeviceError(String error)
+    {
+
+    }
+    @Override
+    public void onDataUpdate(CipedtronicData data)
+    {
+
     }
 
 

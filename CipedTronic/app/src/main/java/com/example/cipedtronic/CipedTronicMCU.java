@@ -2,15 +2,19 @@ package com.example.cipedtronic;
 
 import android.app.Activity;
 
-import com.example.cipedtronic.ResponseStatus;
-import com.example.cipedtronic.USBSerialConnector;
-import com.example.cipedtronic.USBSerialListener;
-import com.example.cipedtronic.Utilities;
-
 import android.widget.Toast;
 
-public class CipedTronicMCU implements USBSerialListener{
-    USBSerialConnector _UsbConnector;
+import java.util.List;
+
+public class CipedTronicMCU implements IBLEListener {
+    private static volatile CipedTronicMCU INSTANCE = null;
+
+
+
+    BLEService _BLEService;
+    List<ICipedTronicMCU> _ICipedTronicMCUs;
+    
+    
     double pi = 3.14159265358979;
     double _PulsesPerRevolution = 18.0;
     double _RadiusOfWheelMM = 365.0;
@@ -29,12 +33,30 @@ public class CipedTronicMCU implements USBSerialListener{
     Activity _Activity;
     boolean _deviceReady = false;
 
-    public CipedTronicMCU(Activity Activity)
+    private CipedTronicMCU(Activity activity)
     {
 
-        _Activity = Activity;
-        _UsbConnector = USBSerialConnector.getInstance();
+        _Activity = activity;
+        _BLEService = new BLEService(_Activity.getApplicationContext(),this);
     }
+
+    public static CipedTronicMCU createInstance(Activity activity)
+    {
+        if(INSTANCE == null) {
+            synchronized (CipedTronicMCU.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new CipedTronicMCU(activity);
+                }
+            }
+        }
+        return INSTANCE;
+    }
+
+    public static CipedTronicMCU getInstance()
+    {
+        return INSTANCE;
+    }
+
 
     @Override
     public void onDataReceived(byte[] data) {
@@ -60,6 +82,15 @@ public class CipedTronicMCU implements USBSerialListener{
                     Toast.makeText(_Activity.getApplicationContext(), exp.getMessage() + " " + tmp[0] + " " + tmp[1] + " " + tmp[2],Toast.LENGTH_LONG).show();
                 }
             }
+            for (ICipedTronicMCU mcu: _ICipedTronicMCUs ) {
+                CipedtronicData mcuData = new CipedtronicData();
+                mcuData.Distance = String.format("%.2f",_Distance);
+                mcuData.MaxVelocity = String.format("%.2f",_VelocityMax);
+                mcuData.Pulses = String.format("%.2f",_Pulses);
+                mcuData.PulsesPerSecond = String.format("%.2f",_PulsesPerSecond);
+                mcuData.Velocity = String.format("%.2f",_Velocity);
+                mcu.onDataUpdate(mcuData);
+            }
         }
     }
 
@@ -79,6 +110,24 @@ public class CipedTronicMCU implements USBSerialListener{
         _deviceReady = false;
     }
 
+    @Override
+    public void onScanResult(List<CipedTronicDevice> devices)
+    {
+        for (ICipedTronicMCU mcu: _ICipedTronicMCUs ) {
+            mcu.onDeviceScanResult(devices);
+        }
+    }
+
+    public void RegisterMCUInterface(ICipedTronicMCU iface)
+    {
+        _ICipedTronicMCUs.add(iface);
+    }
+
+    public void DeregisterMCUInterface(ICipedTronicMCU iface)
+    {
+        _ICipedTronicMCUs.remove(iface);
+    }
+    
     public String getVelocity()
     {
         return String.format("%.1f",_Velocity);
@@ -118,25 +167,23 @@ public class CipedTronicMCU implements USBSerialListener{
     public void setMCUId(Integer id)
     {
         String command = ">I"+Integer.toHexString(id) + "<";
-        _UsbConnector.writeAsync(command.getBytes());
+        _BLEService.writeRXCharacteristic(command.getBytes());
     }
 
     public void ResetMCU()
     {
         String command = ">A";
         if(_deviceReady) {
-            USBSerialConnector.getInstance().writeAsync(command.getBytes());
+            _BLEService.writeRXCharacteristic(command.getBytes());
         }
     }
-    public void Resume()
+    public void initialize()
     {
-        _UsbConnector.setUsbSerialListener(this);
-        _UsbConnector.init(_Activity,115200);
-
+        _BLEService.initialize(this);
     }
 
     public void Pause()
     {
-        _UsbConnector.pausedActivity();
+
     }
 }
