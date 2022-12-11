@@ -11,11 +11,12 @@
 #include "Counter.h"
 #include "EEProm.h"
 
-static volatile uint32_t _Counter = 0;
+static volatile uint32_t _Counter = 0x5555AAAA;
 static volatile uint32_t _LastCounterAdding = 0;
 static volatile uint32_t _LastCounter = 0;
-static volatile uint32_t _CounterPerSecond = 0;
-static volatile uint32_t _MaxCounterPerSecond = 0;
+static volatile uint32_t _CounterPerSecond = 0x11112222;
+static volatile uint32_t _MaxCounterPerSecond = 0x33334444;
+static volatile uint32_t _AvgCounterPerSecond = 0x33334444;
 static volatile uint32_t _LastTimerTick = 0;
 
 
@@ -37,27 +38,34 @@ void CounterHandler()
 }
 void CounterInit()
 {
-	_LastCounter = _Counter = EEPROM_read32(0);
-	_MaxCounterPerSecond = EEPROM_read32(4);
+	_LastCounter = _Counter = EEPROMRead32(0);
+	_MaxCounterPerSecond = EEPROMRead32(4);
+	_AvgCounterPerSecond = EEPROMRead32(8);
+	
 	TCCR1B = (1<<ICES1) | (1<<CS10) | (1<<CS11) | (1<<CS12);
 	TimerSetCallback(CounterTimerCB);
 }
 uint32_t CounterGetCounter()
 {
-	EEPROM_write32(0,_Counter);
+	EEPROMWrite32(EEPROM_ADR_COUNTER,EEPROM_LEN_COUNTER);
 	return _Counter;
 }
 
 uint32_t CounterGetCounterPerSecond()
 {
-	
 	return _CounterPerSecond;
 }
 
 uint32_t CounterGetMaxCounterPerSecond()
 {
-	EEPROM_write32(4,_MaxCounterPerSecond);
+	EEPROMWrite32(EEPROM_LEN_COUNTER_MAX,EEPROM_LEN_COUNTER_MAX);
 	return _MaxCounterPerSecond;
+}
+
+uint32_t CounterGetAvgCounterPerSecond()
+{
+	EEPROMWrite32(EEPROM_ADR_COUNTER_AVG,EEPROM_LEN_COUNTER_AVG);
+	return _AvgCounterPerSecond;
 }
 
 void CounterResetCounter()
@@ -65,11 +73,10 @@ void CounterResetCounter()
 	_Counter = 0;
 	_LastCounter = 0;
 	_MaxCounterPerSecond = 0;
-	EEPROM_write32(0,_Counter);
-	EEPROM_write32(4,_MaxCounterPerSecond);
+	EEPROMWrite32(0,_Counter);
+	EEPROMWrite32(4,_MaxCounterPerSecond);
 	
 }
-
 
 void CounterTimerCB(void)
 {
@@ -86,6 +93,6 @@ void CounterTimerCB(void)
 			_MaxCounterPerSecond = _CounterPerSecond;
 		}
 	}
-	CounterHandler();
+	//CounterHandler();
 	
 }

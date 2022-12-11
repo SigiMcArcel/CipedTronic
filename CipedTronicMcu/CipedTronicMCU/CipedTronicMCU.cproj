@@ -111,109 +111,109 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
       <AvrGccCpp>
-  <avrgcc.common.Device>-mmcu=atmega32u4 -B "%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\gcc\dev\atmega32u4"</avrgcc.common.Device>
-  <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
-  <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
-  <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
-  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
-  <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
-  <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
-  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-  <avrgcc.compiler.symbols.DefSymbols>
-    <ListValues>
-      <Value>DEBUG</Value>
-      <Value>ARCH=ARCH_AVR8</Value>
-      <Value>F_USB=16000000UL</Value>
-      <Value>F_CPU=16000000UL</Value>
-      <Value>USE_STATIC_OPTIONS</Value>
-    </ListValues>
-  </avrgcc.compiler.symbols.DefSymbols>
-  <avrgcc.compiler.directories.IncludePaths>
-    <ListValues>
-      <Value>..</Value>
-      <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
-    </ListValues>
-  </avrgcc.compiler.directories.IncludePaths>
-  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
-  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-  <avrgcccpp.compiler.directories.IncludePaths>
-    <ListValues>
-      <Value>../AdafruitBLE/utility</Value>
-      <Value>../AdafruitBLE/utility/hal</Value>
-      <Value>../AdafruitBLE/utility/uart</Value>
-      <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
-    </ListValues>
-  </avrgcccpp.compiler.directories.IncludePaths>
-  <avrgcccpp.assembler.general.IncludePaths>
-    <ListValues>
-      <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
-    </ListValues>
-  </avrgcccpp.assembler.general.IncludePaths>
-</AvrGccCpp>
+        <avrgcc.common.Device>-mmcu=atmega32u4 -B "%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\gcc\dev\atmega32u4"</avrgcc.common.Device>
+        <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
+        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+        <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+        <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
+        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcc.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>DEBUG</Value>
+            <Value>ARCH=ARCH_AVR8</Value>
+            <Value>F_USB=16000000UL</Value>
+            <Value>F_CPU=16000000UL</Value>
+            <Value>USE_STATIC_OPTIONS</Value>
+          </ListValues>
+        </avrgcc.compiler.symbols.DefSymbols>
+        <avrgcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>..</Value>
+            <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
+          </ListValues>
+        </avrgcc.compiler.directories.IncludePaths>
+        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+        <avrgcccpp.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>../CipedTronic/utility</Value>
+            <Value>../CipedTronic/utility/hal</Value>
+            <Value>../CipedTronic/utility/services</Value>
+            <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
+          </ListValues>
+        </avrgcccpp.compiler.directories.IncludePaths>
+        <avrgcccpp.assembler.general.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
+          </ListValues>
+        </avrgcccpp.assembler.general.IncludePaths>
+      </AvrGccCpp>
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="AdafruitBLE" />
-    <Folder Include="AdafruitBLE\utility" />
-    <Folder Include="AdafruitBLE\utility\hal" />
-    <Folder Include="AdafruitBLE\utility\uart" />
+    <Folder Include="CipedTronic" />
+    <Folder Include="CipedTronic\utility" />
+    <Folder Include="CipedTronic\utility\hal" />
+    <Folder Include="CipedTronic\utility\services" />
     <Folder Include="Platform" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdafruitBLE\BLE.cpp">
+    <Compile Include="CipedTronic\BLE.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\BLE.h">
+    <Compile Include="CipedTronic\BLE.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\aci.h">
+    <Compile Include="CipedTronic\utility\aci.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\acilib.h">
+    <Compile Include="CipedTronic\utility\acilib.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\acilib_defs.h">
+    <Compile Include="CipedTronic\utility\acilib_defs.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\acilib_if.h">
+    <Compile Include="CipedTronic\utility\acilib_if.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\acilib_types.h">
+    <Compile Include="CipedTronic\utility\acilib_types.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\aci_cmds.h">
+    <Compile Include="CipedTronic\utility\aci_cmds.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\aci_evts.h">
+    <Compile Include="CipedTronic\utility\aci_evts.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\aci_protocol_defines.h">
+    <Compile Include="CipedTronic\utility\aci_protocol_defines.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\aci_setup.h">
+    <Compile Include="CipedTronic\utility\aci_setup.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\ble_system.h">
+    <Compile Include="CipedTronic\utility\ble_system.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\dtm.h">
+    <Compile Include="CipedTronic\utility\dtm.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\hal\hal_aci_tl.h">
+    <Compile Include="CipedTronic\utility\hal\hal_aci_tl.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\hal\hal_io.h">
+    <Compile Include="CipedTronic\utility\hal\hal_io.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\hal_platform.h">
+    <Compile Include="CipedTronic\utility\hal_platform.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\lib_aci.h">
+    <Compile Include="CipedTronic\utility\lib_aci.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\uart\services.h">
+    <Compile Include="CipedTronic\utility\services\services.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="main.c">
@@ -235,6 +235,18 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Platform\EEProm.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Platform\Encryption.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Platform\Encyption.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Platform\FIFO.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Platform\FIFO.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Platform\GPIO.c">
@@ -267,7 +279,7 @@
     <Compile Include="Platform\USBSerial.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Protocoll.cpp">
+    <Compile Include="Protocoll.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Protocoll.h">
@@ -275,22 +287,22 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdafruitBLE\utility\acilib.cpp">
+    <Compile Include="CipedTronic\utility\acilib.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\aci_setup.cpp">
+    <Compile Include="CipedTronic\utility\aci_setup.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\hal_aci_tl.cpp">
+    <Compile Include="CipedTronic\utility\hal_aci_tl.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AdafruitBLE\utility\lib_aci.cpp">
+    <Compile Include="CipedTronic\utility\lib_aci.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <None Include="AdafruitBLE\utility\uart\UART_over_BLE.xml">
+    <None Include="CipedTronic\utility\services\UART_over_BLE.xml">
       <SubType>compile</SubType>
     </None>
-    <None Include="AdafruitBLE\utility\uart\ublue_setup.gen.out.txt">
+    <None Include="CipedTronic\utility\services\ublue_setup.gen.out.txt">
       <SubType>compile</SubType>
     </None>
   </ItemGroup>

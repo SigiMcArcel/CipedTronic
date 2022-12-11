@@ -8,12 +8,11 @@
 #include <avr/interrupt.h>
 #include "Platform/Timer.h"
 #include "Platform/GPIO.h"
-//#include "Platform/Register.h"
 #include "Platform/Comparator.h"
 #include "Protocoll.h"
 #include "Platform/Counter.h"
 #include "Platform/USBSerial.h"
-#include "AdafruitBLE/BLE.h"
+#include "CipedTronic/BLE.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,10 +23,10 @@ int main (void)
 {
 	GPIOInit();
 	TimerInit();
-	//CounterInit();
+	CounterInit();
 	USBSerialInit();
-	
-	BLESetDeviceName("ADA_BLE");
+
+	BLESetDeviceName("CIPBLE");
 	GPIOSetDirection(5,&DDRD,GPIO_DIR_OUT);//tx
 	GPIOSetDirection(0,&DDRB,GPIO_DIR_OUT);//rx
 	GPIOSetDirection(7,&DDRC,GPIO_DIR_OUT);//PW led
@@ -45,27 +44,23 @@ int main (void)
 	GPIOReset(5,&PORTD);
 	GPIOReset(0,&PORTB);
 	GPIOReset(7,&PORTC);
-	BLEInit(100,100);
+	BLEInit(0,100);
 	
 	while(1)
 	{
 		uint32_t tick = TimerGetTick();
 		uint32_t diff = tick - _LastTimerTick;
+		CounterHandler();
 		
-		
+		ProtocolRxHandler();
+		BLEProcess();
 		if(diff >= 500)
 		{
 			GPIOToggle(7,&PORTC);
 			_LastTimerTick = tick;
-			//if(BLEIsReady())
-			//{
-				//BLEPuts("test");
-			//}
+			ProtocolHandler();
 			
-			//ProtocollHandler();
-			//
 		}
-		BLEProcess();
 		
 	}
 }
