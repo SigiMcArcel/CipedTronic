@@ -4,9 +4,15 @@
     <PreferenceCategory app:title="@string/Bicycle_header">
 
         <EditTextPreference
-            app:key="pulseperrevolution"
+            app:key="pulse_per_revolution"
             app:persistent="true"
             app:title="@string/PulsesPerRevultion_title"
+            app:useSimpleSummaryProvider="true"/>
+
+        <EditTextPreference
+            app:key="wheel_radius"
+            app:persistent="true"
+            app:title="@string/radius_title"
             app:useSimpleSummaryProvider="true"/>
 
     </PreferenceCategory>
@@ -15,10 +21,9 @@
         <EditTextPreference
             android:defaultValue="Default value"
             android:key="bluetooth_Address"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
             android:title="Bluetooth Address"
-            android:enabled="false"
+            app:persistent="true"
+            app:useSimpleSummaryProvider="true"/>
             android:selectable="false" />
     </PreferenceCategory>
 
