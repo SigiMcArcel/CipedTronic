@@ -1,4 +1,4 @@
-package com.example.cipedtronicapp;
+package com.example.cipedtronicapp.mcu.mcu;
 
 public class CipedtronicData {
     public String Velocity;

@@ -52,13 +52,13 @@ int main (void)
 		uint32_t diff = tick - _LastTimerTick;
 		CounterHandler();
 		
-		ProtocolRxHandler();
+		ProtocolHandler();
 		BLEProcess();
 		if(diff >= 500)
 		{
 			GPIOToggle(7,&PORTC);
 			_LastTimerTick = tick;
-			ProtocolHandler();
+			
 			
 		}
 		

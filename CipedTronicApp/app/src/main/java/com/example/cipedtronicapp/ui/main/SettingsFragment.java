@@ -2,27 +2,13 @@ package com.example.cipedtronicapp.ui.main;
 
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.lifecycle.Observer;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.EditTextPreference;
 import android.text.InputType;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.TextView;
 
-import java.util.List;
-
-import com.example.cipedtronicapp.ICipedTronicMCU;
-import com.example.cipedtronicapp.ResponseStatus;
-import com.example.cipedtronicapp.CipedTronicDevice;
-import com.example.cipedtronicapp.CipedtronicData;
 import com.example.cipedtronicapp.R;
-import com.example.cipedtronicapp.databinding.FragmentMainBinding;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     @Override

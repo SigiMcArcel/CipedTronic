@@ -20,7 +20,7 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.example.cipedtronicapp;
+package com.example.cipedtronicapp.mcu.SerialBLE;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -53,14 +53,16 @@ import android.os.ParcelUuid;
 
 import androidx.core.app.ActivityCompat;
 
+import com.example.cipedtronicapp.Utilities;
+
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
  * given Bluetooth LE device.
  */
-public class BLEService {
-    private final static String TAG = BLEService.class.getSimpleName();
+public class SerialBLE {
+    private final static String TAG = SerialBLE.class.getSimpleName();
 
-    private IBLEListener _IBLEListener;
+    private OnBLESerialListener _IBLEListener;
     private BluetoothManager _BluetoothManager;
     private BluetoothAdapter _BluetoothAdapter;
     private String _BluetoothDeviceAddress;
@@ -99,18 +101,21 @@ public class BLEService {
     private BluetoothLeScanner scanner;
     // Stops scanning after 10 seconds.
     static final long SCAN_PERIOD = 10000;
-    private List<CipedTronicDevice> list = new ArrayList<>();
+    private List<BLEScannedDevice> list = new ArrayList<>();
     private int advCount = 0;
 
 
     List<BluetoothDevice> deviceList;
 
-    public BLEService(Context context, IBLEListener IBLEListener) {
+    public SerialBLE(Context context) {
         _Context = context;
-        _IBLEListener = IBLEListener;
         _ScanHandler = new Handler();
     }
 
+    public void setOnBLESerialListener(OnBLESerialListener listener)
+    {
+        _IBLEListener = listener;
+    }
     public void stopCipetTronicDevices() {
         Log.i(TAG, "stop Scan .");
         scanner.stopScan(_LeScanCallback);
@@ -154,7 +159,7 @@ public class BLEService {
                     super.onScanResult(callbackType, result);
                     if(result != null)
                     {
-                        CipedTronicDevice dev = new CipedTronicDevice();
+                        BLEScannedDevice dev = new BLEScannedDevice();
                         dev.Address = result.getDevice().getAddress();
                         dev.Name = result.getDevice().getName();
                         if(!list.contains(dev) && dev.Name != null)
@@ -241,7 +246,7 @@ public class BLEService {
      *
      * @return Return true if the initialization is successful.
      */
-    public boolean initialize(IBLEListener IBLEListener)
+    public boolean initialize(OnBLESerialListener IBLEListener)
     {
         // For API level 18 and above, get a reference to BluetoothAdapter through
         // BluetoothManager.

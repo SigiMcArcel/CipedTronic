@@ -13,23 +13,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
-import java.util.*;
-import com.example.cipedtronicapp.CipedTronicDevice;
-import com.example.cipedtronicapp.CipedTronicMCU;
-import com.example.cipedtronicapp.CipedtronicData;
-import com.example.cipedtronicapp.ICipedTronicMCU;
-import com.example.cipedtronicapp.R;
+
+import com.example.cipedtronicapp.mcu.SerialBLE.BLEScannedDevice;
 import com.example.cipedtronicapp.databinding.FragmentDeviceBinding;
-import com.example.cipedtronicapp.databinding.FragmentMainBinding;
 
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import android.content.SharedPreferences;
-import java.util.ArrayList;
+
 import java.util.List;
 
 /**
@@ -74,12 +68,12 @@ public class DeviceFragment extends Fragment {
         View root = binding.getRoot();
 
         _VModel = new ViewModelProvider(this).get(PageViewModel.class);
-        _VModel.getScanDeResults().observe(getViewLifecycleOwner(), new Observer<List<CipedTronicDevice>>() {
+        _VModel.getScanDeResults().observe(getViewLifecycleOwner(), new Observer<List<BLEScannedDevice>>() {
             @Override
-            public void onChanged(@Nullable List<CipedTronicDevice> devices) {
+            public void onChanged(@Nullable List<BLEScannedDevice> devices) {
                 final ListView listv = binding.ListViewDevices;
 
-                ArrayAdapter<CipedTronicDevice> arrayAdapter = new ArrayAdapter<CipedTronicDevice>(getContext(),android.R.layout.simple_list_item_1,devices);
+                ArrayAdapter<BLEScannedDevice> arrayAdapter = new ArrayAdapter<BLEScannedDevice>(getContext(),android.R.layout.simple_list_item_1,devices);
                 listv.setAdapter(arrayAdapter);
                 binding.buttonSearchDevice.setEnabled(true);
             }
@@ -114,7 +108,7 @@ public class DeviceFragment extends Fragment {
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(hostActivity);
 
                 SharedPreferences.Editor edt = prefs.edit();
-                CipedTronicDevice dev = (CipedTronicDevice) parent.getAdapter().getItem(position);
+                BLEScannedDevice dev = (BLEScannedDevice) parent.getAdapter().getItem(position);
                 edt.putString("bluetooth_Address",dev.getAddress());
                 edt.apply();
                 edt.commit();

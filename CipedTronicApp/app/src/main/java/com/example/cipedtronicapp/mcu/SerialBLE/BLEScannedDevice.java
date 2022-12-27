@@ -1,6 +1,6 @@
-package com.example.cipedtronicapp;
+package com.example.cipedtronicapp.mcu.SerialBLE;
 
-public class CipedTronicDevice {
+public class BLEScannedDevice {
     public String Name;
     public String Address;
 
@@ -12,8 +12,8 @@ public class CipedTronicDevice {
 
     @Override
     public boolean equals(Object object) {
-        if(object instanceof CipedTronicDevice) {
-            CipedTronicDevice s = (CipedTronicDevice) object;
+        if(object instanceof BLEScannedDevice) {
+            BLEScannedDevice s = (BLEScannedDevice) object;
             return this.Address.equals(s.Address);
         }
         return false;

@@ -213,7 +213,10 @@
     <Compile Include="CipedTronic\utility\lib_aci.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="CipedTronic\utility\services\services.h">
+    <Compile Include="CipedTronic\utility\services\CipedTronicServices.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="CipedTronic\utility\services\UartServices.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="main.c">

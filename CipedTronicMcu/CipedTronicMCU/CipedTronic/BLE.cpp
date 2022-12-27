@@ -20,7 +20,6 @@ extern "C" {
 	#endif
 #include "../Platform/USBSerial.h"
 #include "../Platform/Timer.h"
-#include "../Platform/FIFO.h"
 #ifdef __cplusplus
 }
 #endif
@@ -189,9 +188,6 @@ void BLEInit(uint16_t advTimeout, uint16_t advInterval)
 	lib_aci_debug_print(false);
 	/* Pass the service data into the appropriate struct in the ACI */
 	lib_aci_init(&aci_state);
-	
-	//FifoInit(&hRx,RX_BUFFER_SIZE,1,rxBuffer);
-	//FifoInit(&hTx,TX_BUFFER_SIZE,1,txBuffer);
 }
 
 void BLEProcess(void)

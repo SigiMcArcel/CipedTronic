@@ -1,8 +1,8 @@
-package com.example.cipedtronicapp;
+package com.example.cipedtronicapp.mcu.SerialBLE;
 
 import java.util.List;
 
-public interface IBLEListener {
+public interface OnBLESerialListener {
     void onDataReceived(byte[] data);
 
     void onErrorReceived(String data);
@@ -11,6 +11,6 @@ public interface IBLEListener {
 
     void onDeviceDisconnected();
 
-    void onScanResult(List<CipedTronicDevice> devices);
+    void onScanResult(List<BLEScannedDevice> devices);
 
 }
