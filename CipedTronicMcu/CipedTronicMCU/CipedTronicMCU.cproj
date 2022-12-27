@@ -168,6 +168,12 @@
     <Compile Include="CipedTronic\BLE.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="CipedTronic\Protocol.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="CipedTronic\Protocol.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="CipedTronic\utility\aci.h">
       <SubType>compile</SubType>
     </Compile>
@@ -280,12 +286,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Platform\USBSerial.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Protocoll.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Protocoll.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
