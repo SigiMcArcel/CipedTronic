@@ -38,16 +38,42 @@ void CounterHandler()
 }
 void CounterInit()
 {
-	_LastCounter = _Counter = EEPROMRead32(0);
-	_MaxCounterPerSecond = EEPROMRead32(4);
-	_AvgCounterPerSecond = EEPROMRead32(8);
+	_LastCounter = _Counter = EEPROMRead32(EEPROM_ADR_COUNTER);
+	_MaxCounterPerSecond = EEPROMRead32(EEPROM_ADR_COUNTER_MAX);
+	_AvgCounterPerSecond = EEPROMRead32(EEPROM_ADR_COUNTER_AVG);
 	
+	/*
+		Counter 1  configuration
+		- Raising edge ICES1 = 1
+		- External clock source on Tn pin. Clock on rising edge
+		- Input PD6 
+	*/
 	TCCR1B = (1<<ICES1) | (1<<CS10) | (1<<CS11) | (1<<CS12);
 	TimerSetCallback(CounterTimerCB);
 }
+
+void CounterSetCounter(uint32_t val)
+{
+	_Counter = val;
+	EEPROMWrite32(EEPROM_ADR_COUNTER,EEPROM_LEN_COUNTER);
+}
+
+
+void CounterSetMaxCounterPerSecond(uint32_t val)
+{
+	_MaxCounterPerSecond = val;
+	EEPROMWrite32(EEPROM_ADR_COUNTER_MAX,EEPROM_LEN_COUNTER_MAX);
+}
+
+void CounterSetAvgCounterPerSecond(uint32_t val)
+{
+	_AvgCounterPerSecond = val;
+	EEPROMWrite32(EEPROM_ADR_COUNTER_AVG,EEPROM_LEN_COUNTER_AVG);
+}
+
 uint32_t CounterGetCounter()
 {
-	EEPROMWrite32(EEPROM_ADR_COUNTER,EEPROM_LEN_COUNTER);
+	EEPROMWrite32(EEPROM_ADR_COUNTER,_Counter);
 	return _Counter;
 }
 
@@ -58,7 +84,7 @@ uint32_t CounterGetCounterPerSecond()
 
 uint32_t CounterGetMaxCounterPerSecond()
 {
-	EEPROMWrite32(EEPROM_LEN_COUNTER_MAX,EEPROM_LEN_COUNTER_MAX);
+	EEPROMWrite32(EEPROM_ADR_COUNTER_MAX,EEPROM_LEN_COUNTER_MAX);
 	return _MaxCounterPerSecond;
 }
 
@@ -73,9 +99,10 @@ void CounterResetCounter()
 	_Counter = 0;
 	_LastCounter = 0;
 	_MaxCounterPerSecond = 0;
-	EEPROMWrite32(0,_Counter);
-	EEPROMWrite32(4,_MaxCounterPerSecond);
-	
+	_AvgCounterPerSecond = 0;
+	EEPROMWrite32(EEPROM_ADR_COUNTER,EEPROM_LEN_COUNTER);
+	EEPROMWrite32(EEPROM_ADR_COUNTER_MAX,EEPROM_LEN_COUNTER_MAX);
+	EEPROMWrite32(EEPROM_ADR_COUNTER_AVG,EEPROM_LEN_COUNTER_AVG);
 }
 
 void CounterTimerCB(void)
@@ -93,6 +120,7 @@ void CounterTimerCB(void)
 			_MaxCounterPerSecond = _CounterPerSecond;
 		}
 	}
-	//CounterHandler();
+	
+	CounterHandler();
 	
 }

@@ -168,12 +168,6 @@
     <Compile Include="CipedTronic\BLE.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="CipedTronic\Protocol.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="CipedTronic\Protocol.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="CipedTronic\utility\aci.h">
       <SubType>compile</SubType>
     </Compile>
@@ -222,9 +216,6 @@
     <Compile Include="CipedTronic\utility\services\CipedTronicServices.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="CipedTronic\utility\services\UartServices.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
@@ -262,6 +253,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Platform\Platform.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Platform\Serial.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Platform\SPI.c">

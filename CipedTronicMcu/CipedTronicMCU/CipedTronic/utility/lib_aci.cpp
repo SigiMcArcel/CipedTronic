@@ -234,7 +234,7 @@ bool lib_aci_set_local_data(aci_state_t *aci_stat, uint8_t pipe, uint8_t *p_valu
   }
 
   aci_cmd_params_set_local_data.tx_data.pipe_number = pipe;
-  memcpy(&(aci_cmd_params_set_local_data.tx_data.aci_data[0]), p_value, size);
+  memcpy(&(aci_cmd_params_set_local_data.tx_data._AciData[0]), p_value, size);
   acil_encode_cmd_set_local_data(&(msg_to_send.buffer[0]), &aci_cmd_params_set_local_data, size);
   return hal_aci_tl_send(&msg_to_send);
 }
@@ -243,7 +243,7 @@ bool lib_aci_connect(uint16_t run_timeout, uint16_t adv_interval)
 {
   aci_cmd_params_connect_t aci_cmd_params_connect;
   aci_cmd_params_connect.timeout      = run_timeout;
-  aci_cmd_params_connect.adv_interval = adv_interval;
+  aci_cmd_params_connect._AdvInterval = adv_interval;
   acil_encode_cmd_connect(&(msg_to_send.buffer[0]), &aci_cmd_params_connect);
   return hal_aci_tl_send(&msg_to_send);
 }
@@ -278,7 +278,7 @@ bool lib_aci_bond(uint16_t run_timeout, uint16_t adv_interval)
 {
   aci_cmd_params_bond_t aci_cmd_params_bond;
   aci_cmd_params_bond.timeout = run_timeout;
-  aci_cmd_params_bond.adv_interval = adv_interval;
+  aci_cmd_params_bond._AdvInterval = adv_interval;
   acil_encode_cmd_bond(&(msg_to_send.buffer[0]), &aci_cmd_params_bond);
   return hal_aci_tl_send(&msg_to_send);
 }
@@ -339,7 +339,7 @@ bool lib_aci_send_data(uint8_t pipe, uint8_t *p_value, uint8_t size)
   }
   {
       aci_cmd_params_send_data.tx_data.pipe_number = pipe;
-      memcpy(&(aci_cmd_params_send_data.tx_data.aci_data[0]), p_value, size);
+      memcpy(&(aci_cmd_params_send_data.tx_data._AciData[0]), p_value, size);
       acil_encode_cmd_send_data(&(msg_to_send.buffer[0]), &aci_cmd_params_send_data, size);
       is_cmd_response_expected = false;
       ret_val = hal_aci_tl_send(&msg_to_send);          
@@ -583,7 +583,7 @@ bool lib_aci_broadcast(const uint16_t timeout, const uint16_t adv_interval)
   }
 
   aci_cmd_params_broadcast.timeout = timeout;
-  aci_cmd_params_broadcast.adv_interval = adv_interval;
+  aci_cmd_params_broadcast._AdvInterval = adv_interval;
   acil_encode_cmd_broadcast(&(msg_to_send.buffer[0]), &aci_cmd_params_broadcast);
   return hal_aci_tl_send(&msg_to_send);
 }

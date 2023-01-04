@@ -106,7 +106,23 @@ void USBSerialPutsLong(uint32_t val)
 	ultoa(val,str,10);
 	USBSerialPuts(str);
 }
-
+void USBSerialPutsByteArray(uint8_t* array,uint8_t len )
+{
+	int i = 0;
+	if(array == 0)
+	{
+		return;
+	}
+	for(i = 0;i < len;i++)
+	{
+		USBSerialPuts("0x");
+		USBSerialPutsHex8(array[i]);
+		USBSerialPuts(" ");
+	}
+	
+	USBSerialPuts("\r\n");
+	
+}
 uint8_t USBSerialConnected()
 {
 	return m_usb_isconnected();

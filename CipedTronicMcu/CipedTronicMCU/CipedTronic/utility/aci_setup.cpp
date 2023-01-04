@@ -21,7 +21,7 @@
 #include "aci_setup.h"
 
 extern "C" {
-#include "../../Platform/USBSerial.h"
+#include "../../Platform/Serial.h"
 #include "../../Platform/GPIO.h"
 #include "../../Platform/Timer.h"
 }
@@ -38,7 +38,7 @@ extern "C" {
 // Current connection interval, slave latency and link supervision timeout
 // Current State of the the GATT client (Service Discovery status)
 
-static hal_aci_evt_t  aci_data;
+static hal_aci_evt_t  _AciData;
 static hal_aci_data_t aci_cmd;
 
 aci_status_code_t aci_setup(aci_state_t *aci_stat, uint8_t num_cmds, uint8_t num_cmd_offset)
@@ -57,11 +57,7 @@ aci_status_code_t aci_setup(aci_state_t *aci_stat, uint8_t num_cmds, uint8_t num
     //Put the Setup ACI message in the command queue
     if (!hal_aci_tl_send(&aci_cmd))
     {
-      USBSerialPuts("Cmd Queue Full ");
-	  USBSerialPutsLong(i);
-	  USBSerialPuts(" ");
-	  USBSerialPutsLong(num_cmds);
-	  USBSerialPuts("\r\n");
+      SerialPuts("Cmd Queue Full \r\n");
       return ACI_STATUS_ERROR_INTERNAL;
     }
     else
@@ -90,37 +86,31 @@ aci_status_code_t aci_setup(aci_state_t *aci_stat, uint8_t num_cmds, uint8_t num
     //
     //@check The setup wil fail in the while(1) below when the 32KHz source for the nRF8001 is in-correct in the setup generated in the nRFgo studio
 	
-    if (true == lib_aci_event_get(aci_stat, &aci_data))
+    if (true == lib_aci_event_get(aci_stat, &_AciData))
     {
-      aci_evt = &aci_data.evt;
+      aci_evt = &_AciData.evt;
       
       evt_count++;
   
       if (ACI_EVT_CMD_RSP != aci_evt->evt_opcode )
       {
         //Got something other than a command response evt -> Error
-		 USBSerialPuts("ACI_STATUS_ERROR_INTERNAL\r\n");  
+		 SerialPuts("ACI_STATUS_ERROR_INTERNAL\r\n");  
         return ACI_STATUS_ERROR_INTERNAL;
       }
       
       if (!((ACI_STATUS_TRANSACTION_CONTINUE == aci_evt->params.cmd_rsp.cmd_status) || 
            (ACI_STATUS_TRANSACTION_COMPLETE == aci_evt->params.cmd_rsp.cmd_status)))
       {
-		  USBSerialPuts("ACI_STATUS_TRANSACTION_COMPLETE ");  
-		  USBSerialPutsHex8(aci_evt->params.cmd_rsp.cmd_status);
-		  USBSerialPuts("\r\n");
         return (aci_status_code_t )aci_evt->params.cmd_rsp.cmd_status;
       }
       else
       {
-		   USBSerialPuts("Cmd Response Evt\r\n");  
-        //Serial.print(F("Cmd Response Evt "));
-        //Serial.println(evt_count);
+		  ;
       }
       
       if (num_cmds == evt_count)
       {
-		  USBSerialPuts("Cmd Response reached\r\n");  
         break;
       }           
 	      
@@ -145,9 +135,6 @@ aci_status_code_t do_aci_setup(aci_state_t *aci_stat)
   {
     for(i=0; i<(aci_stat->aci_setup_info.num_setup_msgs/(ACI_QUEUE_SIZE-1)); i++)
     {
-      //Serial.print(ACI_QUEUE_SIZE, DEC);
-      //Serial.print(F(" "));
-      //Serial.println(0+(ACI_QUEUE_SIZE*i), DEC);
       status = aci_setup(aci_stat, ACI_QUEUE_SIZE-1, ((ACI_QUEUE_SIZE-1)*i));
     }
     if ((aci_stat->aci_setup_info.num_setup_msgs % (ACI_QUEUE_SIZE-1)) != 0)

@@ -23,6 +23,6 @@ void USBSerialPuts(const char *str);
 void USBSerialPutsHex8(uint8_t val);
 void USBSerialPutsHex32(uint32_t val);
 void USBSerialPutsLong(uint32_t val);
-
+void USBSerialPutsByteArray(uint8_t* array,uint8_t len );
 
 #endif /* USBSERIAL_H_ */

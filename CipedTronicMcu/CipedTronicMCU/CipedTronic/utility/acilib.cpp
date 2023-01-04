@@ -55,7 +55,7 @@ void acil_encode_cmd_set_local_data(uint8_t *buffer, aci_cmd_params_set_local_da
   *(buffer + OFFSET_ACI_CMD_T_LEN) = MSG_SET_LOCAL_DATA_BASE_LEN + data_size;
   *(buffer + OFFSET_ACI_CMD_T_CMD_OPCODE) = ACI_CMD_SET_LOCAL_DATA;
   *(buffer + OFFSET_ACI_CMD_T_SET_LOCAL_DATA + OFFSET_ACI_CMD_PARAMS_SEND_DATA_T_TX_DATA + OFFSET_ACI_TX_DATA_T_PIPE_NUMBER) = p_aci_cmd_params_set_local_data->tx_data.pipe_number;
-  memcpy(buffer + OFFSET_ACI_CMD_T_SET_LOCAL_DATA + OFFSET_ACI_CMD_PARAMS_SEND_DATA_T_TX_DATA + OFFSET_ACI_TX_DATA_T_ACI_DATA,  &(p_aci_cmd_params_set_local_data->tx_data.aci_data[0]), data_size);
+  memcpy(buffer + OFFSET_ACI_CMD_T_SET_LOCAL_DATA + OFFSET_ACI_CMD_PARAMS_SEND_DATA_T_TX_DATA + OFFSET_ACI_TX_DATA_T_ACI_DATA,  &(p_aci_cmd_params_set_local_data->tx_data._AciData[0]), data_size);
 }
 
 void acil_encode_cmd_connect(uint8_t *buffer, aci_cmd_params_connect_t *p_aci_cmd_params_connect)
@@ -64,8 +64,8 @@ void acil_encode_cmd_connect(uint8_t *buffer, aci_cmd_params_connect_t *p_aci_cm
   *(buffer + OFFSET_ACI_CMD_T_CMD_OPCODE) = ACI_CMD_CONNECT;
   *(buffer + OFFSET_ACI_CMD_T_CONNECT + OFFSET_ACI_CMD_PARAMS_CONNECT_T_TIMEOUT_MSB) = (uint8_t)(p_aci_cmd_params_connect->timeout >> 8);
   *(buffer + OFFSET_ACI_CMD_T_CONNECT + OFFSET_ACI_CMD_PARAMS_CONNECT_T_TIMEOUT_LSB) = (uint8_t)(p_aci_cmd_params_connect->timeout);
-  *(buffer + OFFSET_ACI_CMD_T_CONNECT + OFFSET_ACI_CMD_PARAMS_CONNECT_T_ADV_INTERVAL_MSB) = (uint8_t)(p_aci_cmd_params_connect->adv_interval >> 8);
-  *(buffer + OFFSET_ACI_CMD_T_CONNECT + OFFSET_ACI_CMD_PARAMS_CONNECT_T_ADV_INTERVAL_LSB) = (uint8_t)(p_aci_cmd_params_connect->adv_interval);
+  *(buffer + OFFSET_ACI_CMD_T_CONNECT + OFFSET_ACI_CMD_PARAMS_CONNECT_T_ADV_INTERVAL_MSB) = (uint8_t)(p_aci_cmd_params_connect->_AdvInterval >> 8);
+  *(buffer + OFFSET_ACI_CMD_T_CONNECT + OFFSET_ACI_CMD_PARAMS_CONNECT_T_ADV_INTERVAL_LSB) = (uint8_t)(p_aci_cmd_params_connect->_AdvInterval);
 }
 
 void acil_encode_cmd_bond(uint8_t *buffer, aci_cmd_params_bond_t *p_aci_cmd_params_bond)
@@ -74,8 +74,8 @@ void acil_encode_cmd_bond(uint8_t *buffer, aci_cmd_params_bond_t *p_aci_cmd_para
   *(buffer + OFFSET_ACI_CMD_T_CMD_OPCODE) = ACI_CMD_BOND;
   *(buffer + OFFSET_ACI_CMD_T_BOND + OFFSET_ACI_CMD_PARAMS_BOND_T_TIMEOUT_MSB) = (uint8_t)(p_aci_cmd_params_bond->timeout >> 8);
   *(buffer + OFFSET_ACI_CMD_T_BOND + OFFSET_ACI_CMD_PARAMS_BOND_T_TIMEOUT_LSB) = (uint8_t)(p_aci_cmd_params_bond->timeout);
-  *(buffer + OFFSET_ACI_CMD_T_BOND + OFFSET_ACI_CMD_PARAMS_BOND_T_ADV_INTERVAL_MSB) = (uint8_t)(p_aci_cmd_params_bond->adv_interval >> 8);
-  *(buffer + OFFSET_ACI_CMD_T_BOND + OFFSET_ACI_CMD_PARAMS_BOND_T_ADV_INTERVAL_LSB) = (uint8_t)(p_aci_cmd_params_bond->adv_interval);
+  *(buffer + OFFSET_ACI_CMD_T_BOND + OFFSET_ACI_CMD_PARAMS_BOND_T_ADV_INTERVAL_MSB) = (uint8_t)(p_aci_cmd_params_bond->_AdvInterval >> 8);
+  *(buffer + OFFSET_ACI_CMD_T_BOND + OFFSET_ACI_CMD_PARAMS_BOND_T_ADV_INTERVAL_LSB) = (uint8_t)(p_aci_cmd_params_bond->_AdvInterval);
 }
 
 void acil_encode_cmd_disconnect(uint8_t *buffer, aci_cmd_params_disconnect_t *p_aci_cmd_params_disconnect)
@@ -121,7 +121,7 @@ void acil_encode_cmd_send_data(uint8_t *buffer, aci_cmd_params_send_data_t *p_ac
   *(buffer + OFFSET_ACI_CMD_T_LEN) = MSG_SEND_DATA_BASE_LEN + data_size;
   *(buffer + OFFSET_ACI_CMD_T_CMD_OPCODE) = ACI_CMD_SEND_DATA;
   *(buffer + OFFSET_ACI_CMD_T_SEND_DATA + OFFSET_ACI_CMD_PARAMS_SEND_DATA_T_TX_DATA + OFFSET_ACI_TX_DATA_T_PIPE_NUMBER) = p_aci_cmd_params_send_data_t->tx_data.pipe_number;
-  memcpy((buffer + OFFSET_ACI_CMD_T_SEND_DATA + OFFSET_ACI_CMD_PARAMS_SEND_DATA_T_TX_DATA + OFFSET_ACI_TX_DATA_T_ACI_DATA), &(p_aci_cmd_params_send_data_t->tx_data.aci_data[0]), data_size);
+  memcpy((buffer + OFFSET_ACI_CMD_T_SEND_DATA + OFFSET_ACI_CMD_PARAMS_SEND_DATA_T_TX_DATA + OFFSET_ACI_TX_DATA_T_ACI_DATA), &(p_aci_cmd_params_send_data_t->tx_data._AciData[0]), data_size);
 }
 
 void acil_encode_cmd_request_data(uint8_t *buffer, aci_cmd_params_request_data_t *p_aci_cmd_params_request_data)
@@ -250,8 +250,8 @@ void acil_encode_cmd_broadcast(uint8_t *buffer, aci_cmd_params_broadcast_t * p_a
   *(buffer + OFFSET_ACI_CMD_T_CMD_OPCODE) = ACI_CMD_BROADCAST;
   *(buffer + OFFSET_ACI_CMD_T_BROADCAST + OFFSET_ACI_CMD_PARAMS_BROADCAST_T_TIMEOUT_LSB) = (p_aci_cmd_params_broadcast->timeout & 0xff);
   *(buffer + OFFSET_ACI_CMD_T_BROADCAST + OFFSET_ACI_CMD_PARAMS_BROADCAST_T_TIMEOUT_MSB) = (uint8_t)(p_aci_cmd_params_broadcast->timeout >> 8);
-  *(buffer + OFFSET_ACI_CMD_T_BROADCAST + OFFSET_ACI_CMD_PARAMS_BROADCAST_T_ADV_INTERVAL_LSB) = (p_aci_cmd_params_broadcast->adv_interval & 0xff);
-  *(buffer + OFFSET_ACI_CMD_T_BROADCAST + OFFSET_ACI_CMD_PARAMS_BROADCAST_T_ADV_INTERVAL_MSB) = (uint8_t)(p_aci_cmd_params_broadcast->adv_interval >> 8);
+  *(buffer + OFFSET_ACI_CMD_T_BROADCAST + OFFSET_ACI_CMD_PARAMS_BROADCAST_T_ADV_INTERVAL_LSB) = (p_aci_cmd_params_broadcast->_AdvInterval & 0xff);
+  *(buffer + OFFSET_ACI_CMD_T_BROADCAST + OFFSET_ACI_CMD_PARAMS_BROADCAST_T_ADV_INTERVAL_MSB) = (uint8_t)(p_aci_cmd_params_broadcast->_AdvInterval >> 8);
 }
   
 void acil_encode_cmd_open_adv_pipes(uint8_t *buffer, aci_cmd_params_open_adv_pipe_t * p_aci_cmd_params_open_adv_pipe)
@@ -466,7 +466,7 @@ uint8_t acil_decode_evt_data_received(uint8_t *buffer_in, aci_evt_params_data_re
 {
   uint8_t size = *( buffer_in + OFFSET_ACI_EVT_T_LEN) - (OFFSET_ACI_EVT_T_DATA_RECEIVED + OFFSET_ACI_RX_DATA_T_ACI_DATA) + 1 ;
   p_evt_params_data_received->rx_data.pipe_number = *(buffer_in + OFFSET_ACI_EVT_T_DATA_RECEIVED + OFFSET_ACI_RX_DATA_T_PIPE_NUMBER);
-  memcpy((uint8_t *)p_evt_params_data_received->rx_data.aci_data, (buffer_in + OFFSET_ACI_EVT_T_DATA_RECEIVED + OFFSET_ACI_RX_DATA_T_ACI_DATA), size);
+  memcpy((uint8_t *)p_evt_params_data_received->rx_data.aciData, (buffer_in + OFFSET_ACI_EVT_T_DATA_RECEIVED + OFFSET_ACI_RX_DATA_T_ACI_DATA), size);
   return size;
 }
 

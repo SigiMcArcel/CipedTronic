@@ -12,6 +12,9 @@
 extern "C" {
 	#endif
 void CounterInit();
+void CounterSetCounter(uint32_t val);
+void CounterSetMaxCounterPerSecond(uint32_t val);
+void CounterSetAvgCounterPerSecond(uint32_t val);
 uint32_t CounterGetCounter();
 uint32_t CounterGetCounterPerSecond();
 uint32_t CounterGetMaxCounterPerSecond();

@@ -292,7 +292,7 @@ typedef struct
 typedef struct
 {
   uint8_t pipe_number;
-  uint8_t aci_data[ACI_PIPE_TX_DATA_MAX_LEN];
+  uint8_t _AciData[ACI_PIPE_TX_DATA_MAX_LEN];
 } aci_tx_data_t;
 
 /**
@@ -302,7 +302,7 @@ typedef struct
 typedef struct
 {
   uint8_t pipe_number;
-  uint8_t aci_data[ACI_PIPE_RX_DATA_MAX_LEN];
+  uint8_t aciData[ACI_PIPE_RX_DATA_MAX_LEN];
 } aci_rx_data_t;
 
 /**

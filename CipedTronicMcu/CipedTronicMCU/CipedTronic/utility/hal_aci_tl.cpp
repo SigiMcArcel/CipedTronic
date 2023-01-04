@@ -20,7 +20,7 @@
 extern "C" {
 #endif
 #include "../../Platform/SPI.h"
-#include "../../Platform/USBSerial.h"
+#include "../../Platform/Serial.h"
 #include "../../Platform/GPIO.h"
 #include "../../Platform/Timer.h"
 #ifdef __cplusplus
@@ -45,7 +45,7 @@ static void ReadyLineOccured(uint8_t num)
 static void           m_print_aci_data(hal_aci_data_t *p_data);
 
 typedef struct {
- hal_aci_data_t           aci_data[ACI_QUEUE_SIZE];
+ hal_aci_data_t           _AciData[ACI_QUEUE_SIZE];
  uint8_t                  head;
  uint8_t                  tail;
 } aci_queue_t;
@@ -87,7 +87,7 @@ static uint8_t waitReadyLine(uint32_t timeout)
 	{
 		if((TimerGetTick() - start) > timeout)
 		{
-			USBSerialPuts(("Timeout\r\n"));
+			SerialPuts(("Timeout\r\n"));
 			return 0;
 		} 
 	}
@@ -101,7 +101,7 @@ static uint8_t waitNotReadyLine(uint32_t timeout)
 	{
 		if((TimerGetTick() - start) > timeout)
 		{
-			USBSerialPuts(("Timeout\r\n"));
+			SerialPuts(("Timeout\r\n"));
 			return false;
 		}
 	}
@@ -115,8 +115,8 @@ static void m_aci_q_init(aci_queue_t *aci_q)
   aci_q->tail = 0;
   for(loop=0; loop<ACI_QUEUE_SIZE; loop++)
   {
-    aci_tx_q.aci_data[loop].buffer[0] = 0x00;
-    aci_tx_q.aci_data[loop].buffer[1] = 0x00;
+    aci_tx_q._AciData[loop].buffer[0] = 0x00;
+    aci_tx_q._AciData[loop].buffer[1] = 0x00;
   }
 }
 
@@ -135,9 +135,9 @@ static bool m_aci_q_enqueue(aci_queue_t *aci_q, hal_aci_data_t *p_data)
     /* full queue */
     return false;
   }
-  aci_q->aci_data[aci_q->tail].status_byte = 0;
+  aci_q->_AciData[aci_q->tail].status_byte = 0;
   
-  memcpy((uint8_t *)&(aci_q->aci_data[aci_q->tail].buffer[0]), (uint8_t *)&p_data->buffer[0], length + 1);
+  memcpy((uint8_t *)&(aci_q->_AciData[aci_q->tail].buffer[0]), (uint8_t *)&p_data->buffer[0], length + 1);
   aci_q->tail = next;
   
   return true;
@@ -152,7 +152,7 @@ static bool m_aci_q_dequeue(aci_queue_t *aci_q, hal_aci_data_t *p_data)
     return false;
   }
   
-  memcpy((uint8_t *)p_data, (uint8_t *)&(aci_q->aci_data[aci_q->head]), sizeof(hal_aci_data_t));
+  memcpy((uint8_t *)p_data, (uint8_t *)&(aci_q->_AciData[aci_q->head]), sizeof(hal_aci_data_t));
   aci_q->head = (aci_q->head + 1) % ACI_QUEUE_SIZE;
   
   return true;
@@ -192,14 +192,14 @@ void m_print_aci_data(hal_aci_data_t *p_data)
   const uint8_t length = p_data->buffer[0];
   uint8_t i;
   
-  USBSerialPutsLong(length);
-  USBSerialPuts(" :");
+  SerialPutsLong(length);
+  SerialPuts(" :");
   for (i=0; i<=length; i++)
   {
-    USBSerialPutsHex8(p_data->buffer[i]);
-    USBSerialPuts(", ");
+    SerialPutsHex8(p_data->buffer[i]);
+    SerialPuts(", ");
   }
-  USBSerialPuts("\r\n");
+  SerialPuts("\r\n");
 }
 
 
@@ -227,7 +227,7 @@ uint8_t hal_aci_tl_poll_rdy_line(uint32_t timeout)
 					Should never happen.
 					Spin in a while loop.
 					*/
-				 USBSerialPuts("event buffer full \r\n");
+				 SerialPuts("event buffer full \r\n");
 			}
 		}
 	}
@@ -257,26 +257,26 @@ bool hal_aci_tl_event_get(hal_aci_data_t *p_aci_data)
 
 void hal_aci_tl_init()
 {
-	USBSerialPuts("Set GPIOs\r\n");
+	SerialPuts("Set GPIOs\r\n");
    GPIOSetDirection(6,&DDRB,GPIO_DIR_IN);//Ready line
    GPIOSetDirection(7,&DDRB,GPIO_DIR_OUT);//Request line
    GPIOSetDirection(5,&DDRB,GPIO_DIR_OUT);//reset
   GPIOSet(6,&PORTB);
-   USBSerialPuts("Set Reset and Req line to 1\r\n");
+   SerialPuts("Set Reset and Req line to 1\r\n");
     setRequestLine(1);
 	GPIOSet(5,&PORTB);
-	USBSerialPuts("Init SPI\r\n");
+	SerialPuts("Init SPI\r\n");
    SPIInit(SPI_CPOLPOS,SPI_CPHAFALLING,SPI_CLKDIV_4,SPI_LSB,1);
    m_aci_q_init(&aci_tx_q);
    m_aci_q_init(&aci_rx_q);
-   USBSerialPuts("Reset nrf\r\n");
-   USBSerialPuts("Init INT\r\n");
+   SerialPuts("Reset nrf\r\n");
+   SerialPuts("Init INT\r\n");
    
     GPIOReset(5,&PORTB);
     TimerWait(1000);
     GPIOSet(5,&PORTB);
     TimerWait(1000);
-	 USBSerialPuts(" Wait for readyline\r\n");
+	 SerialPuts(" Wait for readyline\r\n");
 }
 
 bool hal_aci_tl_send(hal_aci_data_t *p_aci_cmd)
@@ -292,7 +292,7 @@ bool hal_aci_tl_send(hal_aci_data_t *p_aci_cmd)
 	 
 	if (!m_aci_q_enqueue(&aci_tx_q,p_aci_cmd))
 	{
-		USBSerialPuts("tx buffer full \r\n");
+		SerialPuts("tx buffer full \r\n");
 		return false;
 	}
 	txPending = 1;
@@ -324,7 +324,7 @@ hal_aci_data_t * hal_aci_tl_poll_get(void)
   {
 	   if (true == aci_debug_print)
 	   {
-		   USBSerialPuts("C");
+		   SerialPuts("C");
 		   m_print_aci_data(&data_to_send);
 	   }
 	   for(int i = 0;i < 20000;i++){}
@@ -370,7 +370,7 @@ hal_aci_data_t * hal_aci_tl_poll_get(void)
 	for(int i = 0;i < 20000;i++){}
 	if (true == aci_debug_print)
 	{
-		 USBSerialPuts("E");
+		 SerialPuts("E");
 		 m_print_aci_data(&received_data);
 	}
 

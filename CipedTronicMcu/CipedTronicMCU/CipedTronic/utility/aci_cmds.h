@@ -226,7 +226,7 @@ typedef struct
 typedef struct
 {
   uint16_t        timeout;  /**< 0x0000 (no timeout) to 0x3FFF */
-  uint16_t        adv_interval;     /**< 16 bits of advertising interval for general discovery */
+  uint16_t        _AdvInterval;     /**< 16 bits of advertising interval for general discovery */
 } aci_cmd_params_connect_t;
 
 /**
@@ -236,7 +236,7 @@ typedef struct
 typedef struct
 {
   uint16_t        timeout;  /**< 0x0000 (no timeout) to 0x3FFF */
-  uint16_t        adv_interval;     /**< 16 bits of advertising interval for general discovery */
+  uint16_t        _AdvInterval;     /**< 16 bits of advertising interval for general discovery */
 } aci_cmd_params_bond_t;
 
 /**
@@ -352,7 +352,7 @@ typedef struct
 typedef struct
 {
   uint16_t        timeout;  /**< 0x0000 (no timeout) to 0x3FFF */
-  uint16_t        adv_interval;     /**< 16 bits of advertising interval for general discovery */
+  uint16_t        _AdvInterval;     /**< 16 bits of advertising interval for general discovery */
 } aci_cmd_params_broadcast_t;
 
 /**
