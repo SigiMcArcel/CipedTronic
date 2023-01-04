@@ -1,9 +1,11 @@
 package com.example.cipedtronicapp.ui.main;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
@@ -11,17 +13,23 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.cipedtronicapp.databinding.FragmentDeviceBinding;
+import com.example.cipedtronicapp.mcu.BLE.BLEScannedDevice;
 import com.example.cipedtronicapp.mcu.mcu.CipedtronicData;
 import com.example.cipedtronicapp.R;
 import com.example.cipedtronicapp.databinding.FragmentDataBinding;
+import com.google.android.material.snackbar.Snackbar;
 
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
 
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,16 +37,6 @@ import androidx.lifecycle.ViewModelProvider;
  * create an instance of this fragment.
  */
 public class DataFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     private FragmentDataBinding binding;
 
     private TextView textViewvelocity;
@@ -50,16 +48,7 @@ public class DataFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment DataFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static DataFragment newInstance(String param1, String param2) {
+    public static DataFragment newInstance() {
         DataFragment fragment = new DataFragment();
         Bundle args = new Bundle();
         return fragment;
@@ -74,7 +63,7 @@ public class DataFragment extends Fragment {
 
         ss1.setSpan(new RelativeSizeSpan(0.2f), h.length() - 4, h.length() , 0); // set size
         textViewvelocity.setText(ss1);
-        h = velocity + " km";
+        h = distance + " km";
         ss1=  new SpannableString(h);
         ss1.setSpan(new RelativeSizeSpan(0.2f), h.length() - 2, h.length() , 0); // set size
         textViewDistance.setText(ss1);
@@ -102,6 +91,7 @@ public class DataFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Log.w("DataFragment", "onCreate");
 
+
     }
 
     @Override
@@ -111,38 +101,60 @@ public class DataFragment extends Fragment {
 
         Context hostActivity = getActivity();
         binding = FragmentDataBinding.inflate(inflater, container, false);
-        View inf = inflater.inflate(R.layout.fragment_data, container, false);
+        View root = binding.getRoot();
 
-        textViewvelocity =  (TextView) inf.findViewById(R.id.textViewVelocity);
-        textViewDistance =  (TextView) inf.findViewById(R.id.textViewDistance);
+
+        textViewvelocity =  binding.textViewVelocity;
+        textViewDistance = binding.textViewDistance;
 
         setTextViewContent("0.00","0.00","0.00");
         setDisconnect(false);
-        _VModel = new ViewModelProvider(this).get(PageViewModel.class);
+        binding.buttonReset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                _VModel.resetDevice();
+            }
+        });
+
+        _VModel = new ViewModelProvider(getActivity()).get(PageViewModel.class);
         _VModel.getData().observe(getViewLifecycleOwner(), new Observer<CipedtronicData>() {
             @Override
             public void onChanged(@Nullable CipedtronicData data) {
-                setTextViewContent(data.Velocity, data.MaxVelocity, data.MaxVelocity);
+                setTextViewContent(data.Velocity, data.MaxVelocity, data.Distance);
             }
         });
         _VModel.getState().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String state) {
-                if(state.equals("connected"))
-                {
-                    setDisconnect(true);
-                }
-                if(state.equals("disconnected"))
+                if(!state.equals("StateConnected"))
                 {
                     setDisconnect(false);
                 }
+               else{
+                    setDisconnect(true);
+                }
+            }
+        });
+        _VModel.getError().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                Snackbar.make(root, s, Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
             }
         });
 
+
+
         // Inflate the layout for this fragment
-        return inf;
+        return root;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+
+    }
 
     @Override
     public void onDestroy() {

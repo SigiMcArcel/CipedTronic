@@ -57,16 +57,9 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setOffscreenPageLimit(0);
         TabLayout tabs = binding.tabs;
         tabs.setupWithViewPager(viewPager);
-        FloatingActionButton fab = binding.fab;
+
         viewPager.addOnPageChangeListener(listener);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         int PERMISSION_ALL = 1;
         String[] permissions =
             {
@@ -96,14 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageSelected(int position) {
-            if (position == 0 && _LastPosition > 0) {
-                    _VModel.connectDevice();
-            }
-            if (position > 0 && _LastPosition == 0) {
 
-                _VModel.disconnectDevice();
-            }
-            _LastPosition = position;
         }
 
         @Override

@@ -16,6 +16,14 @@
             app:useSimpleSummaryProvider="true"/>
 
     </PreferenceCategory>
+    <PreferenceCategory app:title="CipedTronic">
+
+        <EditTextPreference
+            app:key="id"
+            app:persistent="true"
+            app:title="Id"
+            app:useSimpleSummaryProvider="true"/>
+    </PreferenceCategory>
     <PreferenceCategory android:title="Bluetooth">
 
         <EditTextPreference

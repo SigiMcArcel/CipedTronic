@@ -1,6 +1,6 @@
 package com.example.cipedtronicapp.mcu.mcu;
 
-import com.example.cipedtronicapp.mcu.SerialBLE.BLEScannedDevice;
+import com.example.cipedtronicapp.mcu.BLE.BLEScannedDevice;
 
 import java.util.List;
 

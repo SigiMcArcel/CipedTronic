@@ -34,11 +34,11 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         {
             case 0:
             {
-                return DataFragment.newInstance("j","k");
+                return DataFragment.newInstance();
             }
             case 1:
             {
-                return DeviceFragment.newInstance("j","k");
+                return DeviceFragment.newInstance();
             }
             case 2:
             {
@@ -46,7 +46,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
                 return frag;
             }
         }
-        return DataFragment.newInstance("j","k");
+        return DataFragment.newInstance();
     }
 
     @Nullable

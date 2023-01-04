@@ -17,8 +17,9 @@ import android.widget.TextView;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
 
-import com.example.cipedtronicapp.mcu.SerialBLE.BLEScannedDevice;
+import com.example.cipedtronicapp.mcu.BLE.BLEScannedDevice;
 import com.example.cipedtronicapp.databinding.FragmentDeviceBinding;
+import com.google.android.material.snackbar.Snackbar;
 
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
@@ -33,10 +34,6 @@ import java.util.List;
  */
 
 public class DeviceFragment extends Fragment {
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
     private FragmentDeviceBinding binding;
     private PageViewModel _VModel;
 
@@ -45,7 +42,7 @@ public class DeviceFragment extends Fragment {
     }
 
 
-    public static DeviceFragment newInstance(String param1, String param2) {
+    public static DeviceFragment newInstance() {
         DeviceFragment fragment = new DeviceFragment();
         Bundle args = new Bundle();
         return fragment;
@@ -113,7 +110,8 @@ public class DeviceFragment extends Fragment {
                 edt.apply();
                 edt.commit();
                 String d = prefs.getString("pulseperrevolution","");
-                Log.d("hjgjhg",d);
+                Snackbar.make(view, "bluetooth Address saved", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
             }
 
 

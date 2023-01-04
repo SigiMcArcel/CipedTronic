@@ -1,4 +1,4 @@
-package com.example.cipedtronicapp.mcu.SerialBLE;
+package com.example.cipedtronicapp.mcu.BLE;
 
 public class BLEScannedDevice {
     public String Name;
