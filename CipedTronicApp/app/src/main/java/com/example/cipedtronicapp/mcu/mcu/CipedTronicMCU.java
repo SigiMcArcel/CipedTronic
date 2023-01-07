@@ -1,11 +1,9 @@
 package com.example.cipedtronicapp.mcu.mcu;
 
-import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.util.Log;
 
 import com.example.cipedtronicapp.mcu.BLE.BLEAdapter;
-import com.example.cipedtronicapp.mcu.BLE.BLECipedTronic;
 import com.example.cipedtronicapp.mcu.BLE.BLEDevice;
 import com.example.cipedtronicapp.mcu.BLE.BLEScannedDevice;
 import com.example.cipedtronicapp.mcu.BLE.BLETimeOut;
