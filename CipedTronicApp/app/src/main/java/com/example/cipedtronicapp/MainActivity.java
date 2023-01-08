@@ -101,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy()
     {
-        CipedTronicMCU.getInstance().destroy();
         Log.w("Main Activity","destroy");
         super.onDestroy();
     }

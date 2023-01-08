@@ -1,5 +1,6 @@
 package com.example.cipedtronicapp.mcu.mcu;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.Log;
 
@@ -14,48 +15,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class CipedTronicMCU extends  Thread{
+public class CipedTronicMCU extends  BLEDevice{
+
     public interface OnCipedTronicDeviceListener {
-        public void onDeviceScanResult(List<BLEScannedDevice> devices);
+        public void onStatusChanged(String state);
         public void onDeviceError(String error);
-        public void onStateChanged(McuStates state);
         public void onDataUpdate(CipedtronicData data);
     }
 
-    private static volatile CipedTronicMCU INSTANCE = null;
-    //States
-    public enum McuStates
-    {
-        StateIdle,
-        StateInit,
-        StateDeinit,
-        StateConnect,
-        StateConnectWait,
-        StateConnected,
-        StateDisconnect,
-        StateDisconnectWait,
-        StateDisconnected,
-        StateRestart,
-        StateStartScan,
-        StateScanWait,
-        StateScanComplete,
-        StateStartResetMcu,
-        StateResetMcuWait,
-        StateResetMcuComplete,
-        StateSetId,
-        StateSetIdWait,
-        StateSetIdComplete,
-        StateGetId,
-        StateGetIdWait,
-        StateGetIdComplete,
-        StateError,
-        StateNone
-    }
-
     private final long MCU_CMD_RESET_COUNTER = 0x01;
+    public static final UUID PULSES_PER_SECOND_UUID = UUID.fromString("00001236-0000-1000-8000-00805f9b34fb");
+    public static final UUID PULSES_PER_SECOND_MAX_UUID = UUID.fromString("00001237-0000-1000-8000-00805f9b34fb");
+    public static final UUID PULSES_PER_SECOND_AVG_UUID = UUID.fromString("00001238-0000-1000-8000-00805f9b34fb");
+    public static final UUID PULSES_UUID = UUID.fromString("00001239-0000-1000-8000-00805f9b34fb");
+    public static final UUID CONTROL_UUID = UUID.fromString("00001240-0000-1000-8000-00805f9b34fb");
+    public static final UUID SYSTEMID_UUID = UUID.fromString("00002a23-0000-1000-8000-00805f9b34fb");
 
     private OnCipedTronicDeviceListener _Listener;
-
 
     private double pi = 3.14159265358979;
     private double _PulsesPerRevolution = 18.0;
@@ -76,7 +52,6 @@ public class CipedTronicMCU extends  Thread{
     public static final UUID CIPEDTRONIC_UUID = UUID.fromString("00001235-0000-1000-8000-00805f9b34fb");
     private BLEAdapter _BLEAdapter;
     private BLEDevice _BLEDevice;
-    private BLECipedTronic  _BLECipedTronic;
     private String _BluetoothState = "";
     private List<BLEScannedDevice> _ScannedDevices = new ArrayList<>();
     private String _BleAddress = "";
@@ -87,11 +62,6 @@ public class CipedTronicMCU extends  Thread{
     private boolean _deviceReady = false;
     private CipedtronicData mcuData = new CipedtronicData();
 
-    //State machine
-    private ArrayDeque<McuStates> _CommandQueue = new ArrayDeque<>();
-    private McuStates _LastState = McuStates.StateIdle;
-    private McuStates _State = McuStates.StateIdle;
-    private McuStates _OldState = McuStates.StateIdle;
 
     private boolean _StateMachineBusy = false;
     BLETimeOut _RestartTimeOut = new BLETimeOut();
@@ -99,389 +69,25 @@ public class CipedTronicMCU extends  Thread{
     private boolean _AutomaticRestart = false;
     private  boolean _Connected = false;
 
-
-
-    private CipedTronicMCU(Context context)
-    {
-        _Context = context;
-        _BLEAdapter = new BLEAdapter(context);
-        _BLEAdapter.setOnScanListener(_OnScanListener);
-        this.start();
+    public CipedTronicMCU(Context context, BluetoothDevice device) {
+        super(context, device, CIPEDTRONIC_UUID, true);
+        addNotifiationCharacteristic(PULSES_PER_SECOND_UUID);
+        addNotifiationCharacteristic(PULSES_PER_SECOND_MAX_UUID);
+        addNotifiationCharacteristic(PULSES_PER_SECOND_AVG_UUID);
+        addNotifiationCharacteristic(PULSES_UUID);
+        setOnBLEDeviceListener(_OnBLEDeviceListener);
     }
-
 
     public void setOnCipedTronicDeviceListener(OnCipedTronicDeviceListener listener)
     {
         _Listener = listener;
     }
-    public static CipedTronicMCU createInstance(Context context)
+
+
+
+    private void CalculateDeviceData()
     {
-        if(INSTANCE == null) {
-            synchronized (CipedTronicMCU.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new CipedTronicMCU(context);
-                }
-            }
-        }
-        return INSTANCE;
-    }
 
-    public static CipedTronicMCU getInstance()
-    {
-        return INSTANCE;
-    }
-
-    public void StateMachine()
-    {
-        switch (_State) {
-            case StateIdle: //Idle
-            {
-                    /*if (_BluetoothState == "STATE_CONNECTED") {
-                        _State = McuStates.StateConnected;
-                    }
-                    if (_BluetoothState == "STATE_DISCONNECTED") {
-                        _State = McuStates.StateDisconnected;
-                    }*/
-                break;
-            }
-            case StateInit: {
-                _StateMachineBusy = true;
-                _BLEDevice = _BLEAdapter.getDevice(_BleAddress);
-                _BLECipedTronic = new BLECipedTronic(_BLEDevice,CIPEDTRONIC_UUID);
-                _BLECipedTronic.setOnReceiveListener(_OnCipedTronicListener);
-                if (_BLEDevice == null) {
-                    _State = McuStates.StateError;
-                    break;
-                }
-
-                _State = McuStates.StateConnect;
-                break;
-            }
-            case StateDeinit: {
-                _BLEDevice.close();
-                return;
-            }
-            case StateConnect: {
-                if(_Connected)
-                {
-                    _State = McuStates.StateConnected;
-                    break;
-                }
-                _StateMachineBusy = true;
-                _AutomaticRestart = true;
-                if (!_BLEDevice.connect()) {
-                    _State = McuStates.StateError;
-                } else {
-                    _StateMachineTimeOut.reset();
-                    _State = McuStates.StateConnectWait;
-                }
-                break;
-            }
-            case StateConnectWait:{
-                if (_BluetoothState == "STATE_CONNECTED") {
-                    _State = McuStates.StateConnected;
-                } else {
-                    if (_StateMachineTimeOut.check(2000)) {
-                        if(_AutomaticRestart) {
-                            _State = McuStates.StateRestart;
-                        }
-                        else {
-                            _State = McuStates.StateError;
-                        }
-                        break;
-                    }
-                }
-                break;
-            }
-            case StateConnected: {
-
-                if (_BluetoothState == "STATE_DISCONNECTED") {
-                    _Connected = false;
-                    _State = McuStates.StateDisconnected;
-                    _AutomaticRestart = true;
-                    break;
-                }
-                _AutomaticRestart = false;
-                _StateMachineBusy = false;
-                _Connected = true;
-                break;
-            }
-            case StateDisconnect: {
-
-                if(!_Connected)
-                {
-                    _State = McuStates.StateDisconnected;
-                    break;
-                }
-                _StateMachineBusy = true;
-                _AutomaticRestart = false;
-
-                _BLECipedTronic.disconnect();
-                _StateMachineTimeOut.reset();
-
-                _State = McuStates.StateDisconnectWait;
-                break;
-            }
-            case StateDisconnectWait: {
-                //if timoute
-
-                if (_BluetoothState == "STATE_DISCONNECTED") {
-                    _State = McuStates.StateDisconnected;
-                } else {
-                    if (_StateMachineTimeOut.check(2000)) {
-                        _State = McuStates.StateError;
-                    }
-                }
-                break;
-            }
-            case StateDisconnected: {
-                _StateMachineBusy = false;
-                _Connected = false;
-                if(_AutomaticRestart) {
-                    _RestartTimeOut.reset();
-                    _State = McuStates.StateRestart;
-                }
-
-                break;
-            }
-            case StateRestart: {
-                _StateMachineBusy = false;
-                if (_RestartTimeOut.check(10000)) {
-                    _State = McuStates.StateConnect;
-                }
-                break;
-
-            }
-            case StateStartScan:
-            {
-                if(_Connected)
-                {
-                    _State = _LastState;
-                    break;
-                }
-                Log.d("CipedTronicMCU", "start scan");
-                _StateMachineBusy = true;
-                _ScannedDevices.clear();
-                _BLEAdapter.scanDevices("CIPBLA");
-                _State = McuStates.StateScanWait;
-                break;
-            }
-            case StateScanComplete:
-            {
-                Log.d("CipedTronicMCU", "Scan complete");
-                _StateMachineBusy = false;
-                _Listener.onDeviceScanResult(_ScannedDevices);
-                _State = _LastState;
-                break;
-            }
-            case StateStartResetMcu:
-            {
-                if(!_Connected)
-                {
-                    _State = McuStates.StateResetMcuComplete;
-                    break;
-                }
-                Log.d("CipedTronicMCU", "StateStartResetMcu");
-                _StateMachineBusy = true;
-                if(!_BLECipedTronic.writeControl(MCU_CMD_RESET_COUNTER))
-                {
-                    _StateMachineTimeOut.reset();
-                    _State = McuStates.StateError;
-                    break;
-                }
-                _StateMachineTimeOut.reset();
-                _State = McuStates.StateResetMcuWait;
-                break;
-            }
-            case StateResetMcuWait:
-            {
-                if(_StateMachineTimeOut.check(2000))
-                {
-                    _State = McuStates.StateError;
-                    break;
-                }
-                break;
-            }
-            case StateResetMcuComplete:
-            {
-                Log.d("CipedTronicMCU", "StateResetMcuComplete");
-                _State = _LastState;
-                _StateMachineBusy = false;
-                break;
-            }
-            case StateSetId:
-            {
-                if(!_Connected)
-                {
-                    _State = McuStates.StateSetIdComplete;
-                    break;
-                }
-                _StateMachineBusy = true;
-                _BLECipedTronic.writeId(_Id);
-                _StateMachineTimeOut.reset();
-                _State = McuStates.StateSetIdWait;
-                break;
-            }
-            case StateSetIdWait:
-            {
-                if(_StateMachineTimeOut.check(2000))
-                {
-                    _State = McuStates.StateError;
-                    break;
-                }
-                break;
-            }
-
-            case StateSetIdComplete:
-            {
-                _State = _LastState;
-                _StateMachineBusy = false;
-                break;
-            }
-            case StateGetId:
-            {
-                if(!_Connected)
-                {
-                    _State = McuStates.StateGetIdComplete;
-                    break;
-                }
-                _StateMachineBusy = true;
-                _BLECipedTronic.readId();
-                _StateMachineTimeOut.reset();
-                _State = McuStates.StateGetIdWait;
-                break;
-            }
-            case StateGetIdWait:
-            {
-                if(_StateMachineTimeOut.check(2000))
-                {
-                    _State = McuStates.StateError;
-                    break;
-                }
-                break;
-            }
-
-            case StateGetIdComplete:
-            {
-                _State = _LastState;
-                _StateMachineBusy = false;
-                break;
-            }
-            case StateError:
-            {
-                _StateMachineBusy = false;
-                _Listener.onDeviceError("Error");
-                _State = McuStates.StateIdle;
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void run(){
-        while (true) {
-
-            if (!_CommandQueue.isEmpty()&& !_StateMachineBusy) {
-                _LastState = _State;
-                _State = _CommandQueue.poll();
-            }
-
-            StateMachine();
-
-
-            if(_State != _OldState)
-            {
-                Log.d("CipedTronicMCU", _State.name());
-                if(_Listener != null) {
-                    _Listener.onStateChanged(_State);
-                }
-            }
-            _OldState = _State;
-        }//while true
-
-
-    }
-
-
-
-
-    BLEAdapter.OnScanListener _OnScanListener = new BLEAdapter.OnScanListener() {
-        @Override
-        public void onScanResult(List<BLEScannedDevice> devices, String State) {
-            if(_State == McuStates.StateScanWait)
-            {
-                _ScannedDevices = devices;
-                _State = McuStates.StateScanComplete;
-            }
-        }
-    };
-
-
-    BLECipedTronic.OnCipedTronicListener _OnCipedTronicListener = new BLECipedTronic.OnCipedTronicListener() {
-        @Override
-        public void onReceive(long pulsesPerSecond,long pulsesPerSecondMax,long pulsesPerSecondAvg,long pulses) {
-            CalculateDeviceData(pulsesPerSecond,pulsesPerSecondMax,pulsesPerSecondAvg,pulses);
-        }
-
-        @Override
-        public void onRead(byte[] data) {
-            switch(_State)
-            {
-                case StateGetIdWait:
-                {
-                    ByteBuffer buffer = ByteBuffer.allocate(4);//
-                    buffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-                    if(data.length != 4)
-                    {
-                        _State = McuStates.StateError;
-                        return;
-                    }
-                    buffer.put(data);
-                    _IdFromDevice = (long)(buffer.getInt(0) & 0xFFFFFFFFL);
-                    _State = McuStates.StateGetIdComplete;
-                    break;
-                }
-                default:
-                {
-                    _State = McuStates.StateError;
-                }
-            }
-        }
-
-        @Override
-        public void onWritten() {
-            switch(_State)
-            {
-                case StateResetMcuWait:
-                {
-                    _State = McuStates.StateResetMcuComplete;
-                    break;
-                }
-                case StateSetIdWait:
-                {
-                    _State = McuStates.StateSetIdComplete;
-                    break;
-                }
-                default:
-                {
-                    _State = McuStates.StateError;
-                }
-            }
-        }
-
-        @Override
-        public void onStatusChanged(String state) {
-                _BluetoothState = state;
-        }
-
-    };
-
-    private void CalculateDeviceData(long pulsesPerSecond,long pulsesPerSecondMax,long pulsesPerSecondAverage,long pulses)
-    {
-        _PulsesPerSecond = pulsesPerSecond;
-        _PulsesPerSecondMax = pulsesPerSecondMax;
-        _PulsesPerSecondAverage = pulsesPerSecondAverage;
-        _Pulses = pulses;
         if(_PulsesPerRevolution == 0) {_PulsesPerRevolution = 1;}
         _Velocity = (double) _PulsesPerSecond * _RadiusOfWheelMM / 1000 * 2 * pi * 3600 / _PulsesPerRevolution / 1000;
         _VelocityMax = (double) _PulsesPerSecondMax * _RadiusOfWheelMM / 1000 * 2 * pi * 3600 / _PulsesPerRevolution / 1000;
@@ -532,44 +138,77 @@ public class CipedTronicMCU extends  Thread{
     {
         _PulsesPerRevolution = p;
     }
-    public boolean getDeviceReady(){return _deviceReady;}
-    public String getMcuState(){return _State.toString();}
 
-    public boolean setMCUId(long id)
-    {
-        _Id = id;
-        _CommandQueue.push(McuStates.StateSetId);
-       return true;
+
+    public void ResetMCU() {
+        long data = 1;
+        //dont use ByteBuffer it's crap
+        byte[] buffer = new byte[4];
+        //send liitle endian
+        buffer[0] = (byte)(data & 0xFF);
+        buffer[1] = (byte)((data & 0xFF00)>>8);
+        buffer[2] = (byte)((data & 0xFF0000)>>16);
+        buffer[3] = (byte)((data & 0xFF000000)>>24);
+        this.writeCharacteristic(CONTROL_UUID,buffer);
     }
 
+    BLEDevice.OnBLEDeviceListener _OnBLEDeviceListener = new OnBLEDeviceListener() {
+        @Override
+        public void OnStatusChanged(BLEDeviceStates state) {
+            if(_Listener != null)
+            {
+                _Listener.onStatusChanged(state.name());
+            }
+        }
 
-    public boolean start(String address)
-    {
-        _BleAddress = address;
-        _CommandQueue.add(McuStates.StateInit);
-        return true;
-    }
+        @Override
+        public void onCharacteristicRead(UUID characteristicUUID, byte[] value) {
 
-    public void close()
-    {
-        _CommandQueue.add(McuStates.StateDeinit);
-    }
+        }
 
-    public void StartScan()
-    {
-        _CommandQueue.add(McuStates.StateDisconnect);
-        _CommandQueue.add(McuStates.StateStartScan);
-        _CommandQueue.add(McuStates.StateConnect);
-    }
-    public void ResetMCU()
-    {
-        _CommandQueue.add(McuStates.StateStartResetMcu);
-    }
+        @Override
+        public void onCharacteristicNotification(UUID characteristicUUID, byte[] value) {
+            ByteBuffer buffer = ByteBuffer.allocate(4);//   .wrap(value);
+            buffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);
+            if(value.length != 4)
+            {
+                return;
+            }
 
+            buffer.put(value);
+            if(characteristicUUID.compareTo(PULSES_PER_SECOND_UUID) == 0)
+            {
+                _PulsesPerSecond = (long)(buffer.getInt(0) & 0xFFFFFFFFL);
+            }else if(characteristicUUID.compareTo(PULSES_PER_SECOND_MAX_UUID) == 0)
+            {
+                _PulsesPerSecondMax = (long)(buffer.getInt(0) & 0xFFFFFFFFL);
+            }else if(characteristicUUID.compareTo(PULSES_PER_SECOND_AVG_UUID) == 0)
+            {
+                _PulsesPerSecondAverage = (long)(buffer.getInt(0) & 0xFFFFFFFFL);
+            }else if(characteristicUUID.compareTo(PULSES_UUID) == 0)
+            {
+                _Pulses = (long)(buffer.getInt(0) & 0xFFFFFFFFL);
+            }else{
+                return;
+            }
+            CalculateDeviceData();
+
+        }
+
+        @Override
+        public void onError(BLEDeviceErrors error) {
+            if(_Listener != null)
+            {
+                _Listener.onDeviceError(error.name());
+            }
+        }
+    };
 
 @Override
     public void finalize()
     {
         close();
     }
+
+
 }

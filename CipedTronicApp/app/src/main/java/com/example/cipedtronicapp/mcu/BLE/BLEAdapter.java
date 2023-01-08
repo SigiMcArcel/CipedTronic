@@ -15,6 +15,7 @@ import android.bluetooth.le.ScanSettings;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class BLEAdapter {
@@ -86,12 +87,11 @@ public class BLEAdapter {
     }
 
     public BLEDevice getDevice(String address) {
-        BLEDevice device;
         BluetoothDevice blDev = _BluetoothAdapter.getRemoteDevice(address);
         if (blDev == null) {
             return null;
         }
-        return new BLEDevice(address,blDev,_Context);
+        return new BLEDevice(_Context,blDev);
     }
 
     //public

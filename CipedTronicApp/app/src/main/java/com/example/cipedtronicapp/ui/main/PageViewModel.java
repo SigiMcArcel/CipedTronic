@@ -10,6 +10,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.example.cipedtronicapp.mcu.BLE.BLEAdapter;
 import com.example.cipedtronicapp.mcu.BLE.BLEScannedDevice;
 import com.example.cipedtronicapp.mcu.mcu.CipedTronicMCU;
 import com.example.cipedtronicapp.mcu.mcu.CipedtronicData;
@@ -49,6 +50,7 @@ public class PageViewModel extends AndroidViewModel {
 
     private Context _AppContext;
     String _BluetothAddress = "";
+    BLEAdapter _BLEAdapter;
 
     refreshTask _ref = new refreshTask();
     Timer timer = new Timer(true);
@@ -64,7 +66,8 @@ public class PageViewModel extends AndroidViewModel {
 
         _ref.setOnTickListener(_OnTickListener);
         _AppContext = application.getApplicationContext();
-        _CipedTronicMCU = CipedTronicMCU.createInstance(_AppContext);
+        _BLEAdapter = new BLEAdapter(_AppContext);
+        _CipedTronicMCU = (CipedTronicMCU) _BLEAdapter.getDevice(_BluetothAddress);
         if(_CipedTronicMCU != null ) {
             _CipedTronicMCU.setOnCipedTronicDeviceListener(_OnCipedTronicDeviceListener);
             timer.scheduleAtFixedRate(_ref,0,1000);
@@ -79,7 +82,7 @@ public class PageViewModel extends AndroidViewModel {
         @Override
         public void OnTick() {
             CipedtronicData cipedTronicData = new CipedtronicData();
-            String state = _CipedTronicMCU.getMcuState();
+            String state = _CipedTronicMCU.getDeviceState();
             cipedTronicData.Distance = _CipedTronicMCU.getDistance();
             cipedTronicData.MaxVelocity = _CipedTronicMCU.getMaxVelocity();
             cipedTronicData.Pulses = _CipedTronicMCU.getPulses();
@@ -92,10 +95,11 @@ public class PageViewModel extends AndroidViewModel {
         }
     } ;
 
+
     public CipedTronicMCU.OnCipedTronicDeviceListener _OnCipedTronicDeviceListener = new CipedTronicMCU.OnCipedTronicDeviceListener() {
         @Override
-        public void onDeviceScanResult(List<BLEScannedDevice> devices) {
-            _Scanresults.postValue(devices);
+        public void onStatusChanged(String state) {
+
         }
 
         @Override
@@ -103,11 +107,6 @@ public class PageViewModel extends AndroidViewModel {
             _ErrorString.postValue(error);
         }
 
-        @Override
-        public void onStateChanged(CipedTronicMCU.McuStates state) {
-
-            _StateString.postValue(state.name());
-        }
 
         @Override
         public void onDataUpdate(CipedtronicData data)
@@ -135,9 +134,7 @@ public class PageViewModel extends AndroidViewModel {
         _BluetothAddress = prefs.getString("bluetooth_Address", "");
         _CipedTronicMCU.setPulsesPerRevolution(pulsesPerRevolution);
         _CipedTronicMCU.setWheelRadius(wheelradius);
-        if(_BluetothAddress != "") {
-            _CipedTronicMCU.start(_BluetothAddress);
-        }
+        _CipedTronicMCU.connectDevice();
 
     }
 
@@ -148,7 +145,7 @@ public class PageViewModel extends AndroidViewModel {
 
     public void scanDevices()
     {
-        _CipedTronicMCU.StartScan();
+        _BLEAdapter.scanDevices("CIPED");
     }
 
     public LiveData<CipedtronicData> getData() {
