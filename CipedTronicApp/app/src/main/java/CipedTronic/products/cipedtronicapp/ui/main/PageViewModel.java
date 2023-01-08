@@ -117,17 +117,27 @@ public class PageViewModel extends AndroidViewModel {
             _Scanresults.postValue(devices);
         }
     };
-    public void setDevice(BLEScannedDevice device)
+    public void setDeviceAddress(BLEScannedDevice device)
     {
         _BluetothAddress = device.Address;
-        connectDevice(_BluetothAddress);
+        initializeMCU(_BluetothAddress);
     }
 
-    public void resetDevice()
+    public void resetMCU()
     {
         _CipedTronicMCU.ResetMCU();
     }
-    public  void connectDevice(String address)
+
+    void setPulsesPerRevolution(int pulsesPerRevolution)
+    {
+        _CipedTronicMCU.setPulsesPerRevolution(pulsesPerRevolution);
+    }
+    void setWheelradius(float wheelradius)
+    {
+        _CipedTronicMCU.setWheelRadius(wheelradius);
+    }
+
+    public  void initializeMCU(String address)
     {
         int pulsesPerRevolution =  Integer.parseInt(_Prefs.getString("pulse_per_revolution","1"));;
         float wheelradius =  Float.parseFloat(_Prefs.getString("wheel_radius","1"));
@@ -151,7 +161,7 @@ public class PageViewModel extends AndroidViewModel {
     public LiveData<CipedtronicData> getData() {
         return _CipedData;
     }
-    public LiveData<List<BLEScannedDevice>> getScanDeResults() {
+    public LiveData<List<BLEScannedDevice>> getScanResults() {
         return _Scanresults;
     }
     public LiveData<String> getError() {

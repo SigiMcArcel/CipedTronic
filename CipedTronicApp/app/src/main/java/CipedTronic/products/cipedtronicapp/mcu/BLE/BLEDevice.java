@@ -160,6 +160,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
         CharacteristicNotFound,
         DescriptionNotFound,
         CouldNotConnectDevice,
+        InvalidBLEAddress,
         CouldNotReadCharacteristic,
         CouldNotReadDescription,
         CouldNotWriteCharacteristic,
@@ -276,11 +277,11 @@ public class BLEDevice extends Thread implements AutoCloseable{
         _CommandQueue.push(cmd);
     }
     public void writeCharacteristic(UUID characteristicUUID,byte[] value){
-        BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.WriteDescriptor,characteristicUUID,value,null,null);
+        BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.WriteCharacteristic,characteristicUUID,value,null,null);
         _CommandQueue.push(cmd);
     }
     public void readCharacteristic(UUID characteristicUUID) {
-        BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.ReadDescriptor,characteristicUUID,null,null,null);
+        BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.ReadCharacteristic,characteristicUUID,null,null,null);
         _CommandQueue.push(cmd);
     }
 
@@ -315,7 +316,17 @@ public class BLEDevice extends Thread implements AutoCloseable{
             if(result != BLEDeviceErrors.Ok) {
                 return result;
             }
-            _BluetoothDevice = _BluetoothAdapter.getRemoteDevice(_BluetoothDeviceAddress);
+            try {
+                if(_BluetoothDeviceAddress == "")
+                {
+                    return BLEDeviceErrors.Ok;
+                }
+                _BluetoothDevice = _BluetoothAdapter.getRemoteDevice(_BluetoothDeviceAddress);
+            }
+            catch(Exception exp)
+            {
+                return BLEDeviceErrors.InvalidBLEAddress;
+            }
             if(_BluetoothDevice == null){
                 return BLEDeviceErrors.CouldNotGetDevice;
             }
@@ -336,6 +347,11 @@ public class BLEDevice extends Thread implements AutoCloseable{
     private BLEDeviceErrors connect() {
         Log.e("BLEDevice", "connect() ");
         try {
+            //occurs on invalid BLE address. doesnt matter for scanning devices
+            if(_BluetoothGatt == null)
+            {
+                return BLEDeviceErrors.CouldNotConnectDevice;
+            }
             if(!_BluetoothGatt.connect())
             {
                 return BLEDeviceErrors.CouldNotConnectDevice;
@@ -586,32 +602,6 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 if(_CommandQueue.size() > 0)
                 {
                     _ActualCommand = _CommandQueue.poll();
-                    if((_State == BLEDeviceStates.NotInitalized) && (_ActualCommand.Command != BLEDeviceCommandStates.Initialize)){
-                        _Error = BLEDeviceErrors.NotInitialized;
-                        _CommandState = BLEDeviceCommandStates.Error;
-                        break;
-                    }
-
-                   /* if((_State != BLEDeviceStates.NotInitalized) && (_ActualCommand.Command == BLEDeviceCommandStates.Initialize)){
-                        _Error = BLEDeviceErrors.AlreadyInitialized;
-                        _CommandState = BLEDeviceCommandStates.Error;
-                        break;
-                    }*/
-
-                    if((_State == BLEDeviceStates.Disconnected) && (_ActualCommand.Command != BLEDeviceCommandStates.Connect))
-                    {
-                        _CommandQueue.clear();
-                        _Error = BLEDeviceErrors.NotConnected;
-                        _CommandState = BLEDeviceCommandStates.Error;
-                        break;
-                    }
-                    if((_State == BLEDeviceStates.Connected) && (_ActualCommand.Command == BLEDeviceCommandStates.Connect))
-                    {
-                        _CommandQueue.clear();
-                        _Error = BLEDeviceErrors.AlreadyConnected;
-                        _CommandState = BLEDeviceCommandStates.Error;
-                        break;
-                    }
                     _CommandState = _ActualCommand.Command;
                 }
                 break;
@@ -636,6 +626,12 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 return true;
             }
             case Connect: {
+                if(_State == BLEDeviceStates.Connected)
+                {
+                    _Error = BLEDeviceErrors.AlreadyConnected;
+                    _CommandState = BLEDeviceCommandStates.Error;
+                    break;
+                }
                 _Error = connect();
                 if(_Error != BLEDeviceErrors.Ok){
                     _CommandState = BLEDeviceCommandStates.Error;
@@ -667,6 +663,12 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 break;
             }
             case Disconnect: {
+                if(_State == BLEDeviceStates.Disconnected)
+                {
+                    _Error = BLEDeviceErrors.AlreadyDisconnected;
+                    _CommandState = BLEDeviceCommandStates.Error;
+                    break;
+                }
                 _Error = disconnect();
                 if(_Error != BLEDeviceErrors.Ok){
                     _CommandState = BLEDeviceCommandStates.Error;
@@ -756,6 +758,12 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 break;
             }
             case ReadCharacteristic: {
+                if(_State == BLEDeviceStates.Disconnected)
+                {
+                    _Error = BLEDeviceErrors.NotConnected;
+                    _CommandState = BLEDeviceCommandStates.Error;
+                    break;
+                }
                 _Error = readCharacter((UUID)_ActualCommand.Param1);
                 if(_Error != BLEDeviceErrors.Ok){
                     _CommandState = BLEDeviceCommandStates.Error;
@@ -769,6 +777,12 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 break;
             }
             case ReadDescriptor: {
+                if(_State == BLEDeviceStates.Disconnected)
+                {
+                    _Error = BLEDeviceErrors.NotConnected;
+                    _CommandState = BLEDeviceCommandStates.Error;
+                    break;
+                }
                 _Error = readDesc((UUID)_ActualCommand.Param1,(UUID)_ActualCommand.Param2);
                 if(_Error != BLEDeviceErrors.Ok){
                     _CommandState = BLEDeviceCommandStates.Error;
@@ -782,6 +796,12 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 break;
             }
             case WriteCharacteristic: {
+                if(_State == BLEDeviceStates.Disconnected)
+                {
+                    _Error = BLEDeviceErrors.NotConnected;
+                    _CommandState = BLEDeviceCommandStates.Error;
+                    break;
+                }
                 _Error = writeCharacter((UUID)_ActualCommand.Param1,(byte[])_ActualCommand.Param2);
                 if(_Error != BLEDeviceErrors.Ok){
                     _CommandState = BLEDeviceCommandStates.Error;
@@ -795,6 +815,12 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 break;
             }
             case WriteDescriptor: {
+                if(_State == BLEDeviceStates.Disconnected)
+                {
+                    _Error = BLEDeviceErrors.NotConnected;
+                    _CommandState = BLEDeviceCommandStates.Error;
+                    break;
+                }
                 _Error = writeDesc((UUID)_ActualCommand.Param1,(UUID)_ActualCommand.Param2,(byte[])_ActualCommand.Param3);
                 if(_Error != BLEDeviceErrors.Ok){
                     _CommandState = BLEDeviceCommandStates.Error;
@@ -809,6 +835,12 @@ public class BLEDevice extends Thread implements AutoCloseable{
             }
             case ScanDevices:
             {
+                if(_State == BLEDeviceStates.NotInitalized)
+                {
+                    _Error = BLEDeviceErrors.NotInitialized;
+                    _CommandState = BLEDeviceCommandStates.Error;
+                    break;
+                }
                 _ScanActive = true;
                 _LastConnectedState = _State;
                 if(_State == BLEDeviceStates.Connected)

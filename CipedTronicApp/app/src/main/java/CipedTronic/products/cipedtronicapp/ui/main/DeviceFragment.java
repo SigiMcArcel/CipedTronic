@@ -65,7 +65,7 @@ public class DeviceFragment extends Fragment {
         View root = binding.getRoot();
 
         _VModel = new ViewModelProvider(this).get(PageViewModel.class);
-        _VModel.getScanDeResults().observe(getViewLifecycleOwner(), new Observer<List<BLEScannedDevice>>() {
+        _VModel.getScanResults().observe(getViewLifecycleOwner(), new Observer<List<BLEScannedDevice>>() {
             @Override
             public void onChanged(@Nullable List<BLEScannedDevice> devices) {
                 final ListView listv = binding.ListViewDevices;
@@ -110,7 +110,7 @@ public class DeviceFragment extends Fragment {
                 edt.apply();
                 edt.commit();
                 String d = prefs.getString("pulseperrevolution","");
-                _VModel.setDevice(dev);
+                _VModel.setDeviceAddress(dev);
                 Snackbar.make(view, "bluetooth Address saved", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }

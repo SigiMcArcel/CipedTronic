@@ -106,7 +106,7 @@ public class DataFragment extends Fragment {
         binding.buttonReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                _VModel.resetDevice();
+                _VModel.resetMCU();
             }
         });
 
