@@ -1,15 +1,17 @@
 /*
  * USBCDC.c
  *
- * Created: 23.06.2022 20:03:46
+ * used: 23.06.2022 20:03:46
  *  Author: Siegwart
+ *
+ * Created:
+ * M2 USB communication subsystem
+ * version: 2.3
+ * date: March 21, 2013
+ * authors: J. Fiene & J. Romano
+ * https://github.com/PennRobotics/acrobot
  */ 
-// -----------------------------------------------------------------------------
-// M2 USB communication subsystem
-// version: 2.3
-// date: March 21, 2013
-// authors: J. Fiene & J. Romano
-// -----------------------------------------------------------------------------
+
 
 #define USB_SERIAL_PRIVATE_INCLUDE
 #include "USBCDC.h"

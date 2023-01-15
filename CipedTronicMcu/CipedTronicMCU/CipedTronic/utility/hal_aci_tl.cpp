@@ -19,6 +19,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <avr/pgmspace.h>
 #include "../../Platform/SPI.h"
 #include "../../Platform/Serial.h"
 #include "../../Platform/GPIO.h"
@@ -266,7 +269,7 @@ void hal_aci_tl_init()
     setRequestLine(1);
 	GPIOSet(5,&PORTB);
 	SerialPuts("Init SPI\r\n");
-   SPIInit(SPI_CPOLPOS,SPI_CPHAFALLING,SPI_CLKDIV_4,SPI_LSB,1);
+   SPIInit(SPI_CPOLPOS,SPI_CPHAFALLING,SPI_CLKDIV_4,SPI_LSB);
    m_aci_q_init(&aci_tx_q);
    m_aci_q_init(&aci_rx_q);
    SerialPuts("Reset nrf\r\n");

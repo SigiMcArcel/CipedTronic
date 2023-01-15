@@ -25,27 +25,25 @@ char NibbleToChar(uint8_t nibble)
 	return c;
 }
 
-
 void USBSerialInit(void)
 {
-		m_usb_init();
-	
+	m_usb_init();
 }
+
 void USBSerialPutchar(const char c)
 {
 	m_usb_tx_char(c);
-	
 }
+
 char USBSerialGetchar(void)
 {
 	if(m_usb_rx_available())
 	{
 		return m_usb_rx_char();
 	}
-	
 	return -1;
-	
 }
+
 int  USBSerialGets(char *str,char endDelemiter)
 {
 	char c = USBSerialGetchar();
@@ -64,8 +62,8 @@ int  USBSerialGets(char *str,char endDelemiter)
 		return tmp;
 	}
 	return 0;
-	
 }
+
 void USBSerialPuts(const char *str)
 {
 	while(*str != 0)
@@ -106,6 +104,7 @@ void USBSerialPutsLong(uint32_t val)
 	ultoa(val,str,10);
 	USBSerialPuts(str);
 }
+
 void USBSerialPutsByteArray(uint8_t* array,uint8_t len )
 {
 	int i = 0;
@@ -119,10 +118,9 @@ void USBSerialPutsByteArray(uint8_t* array,uint8_t len )
 		USBSerialPutsHex8(array[i]);
 		USBSerialPuts(" ");
 	}
-	
 	USBSerialPuts("\r\n");
-	
 }
+
 uint8_t USBSerialConnected()
 {
 	return m_usb_isconnected();

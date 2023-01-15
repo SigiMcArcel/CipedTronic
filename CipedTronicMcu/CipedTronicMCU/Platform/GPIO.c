@@ -10,6 +10,8 @@
 
 static int toggleState = 0;
 static gpiocallback_t cbGPIO = 0;
+static gpiocallback_t cbPCGPIO = 0;
+
 void GPIOInit(void)
 {
 	//set Direction
@@ -93,6 +95,11 @@ uint8_t GPIOSetInterrupt(gpiocallback_t cb,uint8_t pin,uint8_t mode)
 	return 1;
 }
 
+void GPIOSetPinChangeInterrupt(gpiocallback_t cb,uint8_t mask)
+{
+	 PCIFR = (1 << PCIF0);
+	 PCMSK0 = (1 << mask);
+}
 ISR (INT0_vect)
 {
 	if(cbGPIO != 0)
@@ -134,7 +141,10 @@ ISR (INT6_vect)
 
 ISR (PCINT0_vect)
 {
-	
+	if(cbGPIO != 0)
+	{
+		cbPCGPIO(0);
+	}
 }
 
 

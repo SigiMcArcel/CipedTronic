@@ -168,6 +168,12 @@
     <Compile Include="CipedTronic\BLE.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="CipedTronic\CyclingSpeedCadenceService.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="CipedTronic\CyclingSpeedCadenceService.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="CipedTronic\utility\aci.h">
       <SubType>compile</SubType>
     </Compile>
@@ -219,12 +225,6 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Platform\Comparator.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Platform\Comparator.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Platform\Counter.c">
       <SubType>compile</SubType>
     </Compile>
@@ -237,25 +237,10 @@
     <Compile Include="Platform\EEProm.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Platform\Encryption.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Platform\Encyption.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Platform\FIFO.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Platform\FIFO.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Platform\GPIO.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Platform\Platform.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Platform\Serial.h">
+    <Compile Include="Platform\GPIO.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Platform\SPI.c">

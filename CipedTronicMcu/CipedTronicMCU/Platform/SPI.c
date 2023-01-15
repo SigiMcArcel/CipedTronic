@@ -7,6 +7,9 @@
 
 #include "SPI.h"
 #include "Platform/GPIO.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <avr/pgmspace.h>
 
 void SPIWriteByte(uint8_t data)
 
@@ -21,7 +24,7 @@ uint8_t SPIReadByte(void)
 	return SPDR;
 }
 
-void SPIInit(uint8_t cpol,uint8_t cpha,uint8_t clkDiv,uint8_t dataOrder, uint8_t poll)
+void SPIInit(uint8_t cpol,uint8_t cpha,uint8_t clkDiv,uint8_t dataOrder)
 {
 	SPCR = 0;
 	GPIOSetDirection(2,&DDRB,GPIO_DIR_OUT);
@@ -45,8 +48,7 @@ void SPIInit(uint8_t cpol,uint8_t cpha,uint8_t clkDiv,uint8_t dataOrder, uint8_t
 	
 	//master
 	SPCR |= (1 << MSTR);
-	
-	
+
 	if(dataOrder)
 	{
 		SPCR |= (1 << DORD);
@@ -54,11 +56,6 @@ void SPIInit(uint8_t cpol,uint8_t cpha,uint8_t clkDiv,uint8_t dataOrder, uint8_t
 	
 	//Enable
 	SPCR |= (1 << SPE);
-	//interrupt Enable
-	if(!poll)
-	{
-		SPCR |= (1 << SPIE);
-	}
 }
 
 int8_t SPIWrite(uint8_t *buffer, uint16_t size)
@@ -68,7 +65,7 @@ int8_t SPIWrite(uint8_t *buffer, uint16_t size)
 	{
 		SPIWriteByte(buffer[cnt]);
 	}
-	return 0;
+	return cnt;
 }
 int8_t SPIRead(uint8_t *buffer, uint16_t size)
 {
@@ -85,7 +82,6 @@ int8_t SPIRead(uint8_t *buffer, uint16_t size)
 		{
 			return -1;
 		}
-		
 	}
 	return cnt;
 }

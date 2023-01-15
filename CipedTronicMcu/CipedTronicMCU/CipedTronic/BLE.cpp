@@ -1,6 +1,10 @@
 /*
  * BLE.c
  *
+ * Handles all needed stuff for BLE.
+ * Because the BLE stack is written in C++, BLE
+ * also works as a separation from the rest of the project, which is written in C
+ * Author: Marcel Siegwart
  * Created: 10.07.2022 15:17:13
  *  Author: Siegwart
  */ 
@@ -33,9 +37,9 @@ static char				_SystemID[12] = "CIPEDTRONIC";
 static char				_SoftwareVersion[10] = "";
 static aci_evt_opcode_t _CurrentStatus = ACI_EVT_DISCONNECTED;
 static int8_t			_IsConnected = 0;
-static BLERxCallback_t _RxCallback = NULL;
+static BLERxCallback_t	_RxCallback = NULL;
 
-//BLE stuff
+//Initialize Nordic BLE Stack
 #ifdef SERVICES_PIPE_TYPE_MAPPING_CONTENT
 static services_pipe_type_mapping_t
 services_pipe_type_mapping[NUMBER_OF_PIPES] = SERVICES_PIPE_TYPE_MAPPING_CONTENT;
@@ -44,21 +48,19 @@ services_pipe_type_mapping[NUMBER_OF_PIPES] = SERVICES_PIPE_TYPE_MAPPING_CONTENT
 static services_pipe_type_mapping_t * services_pipe_type_mapping = 0;
 #endif
 
-/* Length of the buffer used to store flash strings temporarily when printing. */
-#define DATA_BUFFER_SIZE 20
-
-/* Store the setup for the nRF8001 in the flash of the AVR to save on RAM */
+// Store the setup for the nRF8001 in the flash of the AVR to save on RAM 
 static const hal_aci_data_t setup_msgs[NB_SETUP_MESSAGES] PROGMEM = SETUP_MESSAGES_CONTENT;
 
-static struct aci_state_t _AciState;            /* ACI state data */
-static hal_aci_evt_t  _AciData;                 /* Command buffer */
+static struct aci_state_t _AciState;            // ACI state data 
+static hal_aci_evt_t  _AciData;                 // Command buffer 
 static bool _TimingChangeDone = false;
 
 
-	
+//Notification handling
+
 #define MAX_PIPE_COUNT 10
 
-typedef struct TxDataPipe_T
+typedef struct TxDataPipe_T //Max registered Values for notifications
 {
 	uint32_t* Value;
 	uint8_t Pipe;
@@ -74,25 +76,32 @@ typedef struct TxHandling_t
 }TxHandling;
 	
 static TxHandling _TxHandling = {0};
-static void BLETxHandler();
-static void BLERxHandler(uint8_t characteristic, uint8_t* value,uint8_t len);
+	
+static void BLETxHandler(); //Handles Notifications
+static void BLERxHandler(uint8_t characteristic, uint8_t* value,uint8_t len); //Handles received data
 
-int8_t BLERegisterPipeValue(uint8_t characteristic, uint32_t* value)
+//publics
+int8_t BLERegisterNotificationValue(uint8_t characteristic, uint32_t* value)
 {
 	if(value == 0)
 	{
 		return -1;
 		
 	}
-	if(_TxHandling.PipeCount >= MAX_PIPE_COUNT)
+	if(_TxHandling.PipeCount >= MAX_PIPE_COUNT) 
 	{
-		return -1;
+		return -2;
+	}
+	if(characteristic > NUMBER_OF_PIPES) //defined in ...service.h
+	{
+		return -3;
 	}
 	_TxHandling.Pipes[_TxHandling.PipeCount].Value = value;
 	_TxHandling.Pipes[_TxHandling.PipeCount].Pipe = characteristic;
 	_TxHandling.PipeCount++;
 	
 }
+
 
 void BLESendNotification()
 {
@@ -106,13 +115,12 @@ void BLEInit(uint16_t advTimeout, uint16_t advInterval,const char * deviceName,c
 	_AdvTimeout = advTimeout;
 	_AdvInterval = _AdvInterval;
 	_RxCallback = rxCallback;
+	//set theh devicename
 	memcpy(_DeviceName, deviceName,strlen(deviceName)+1);
 	_DeviceName[7] = 0; 
 	strcpy(_SoftwareVersion, softwareVersion);
-	EEPROMReadChar(EEPROM_ADR_SYSTEM_ID,_SystemID,EEPROM_LEN_SYSTEM_ID);
 	
-	
-	
+	//BLE Stack Setup
 	if (0 != services_pipe_type_mapping)
 	{
 		_AciState.aci_setup_info.services_pipe_type_mapping = &services_pipe_type_mapping[0];
@@ -132,7 +140,7 @@ void BLEInit(uint16_t advTimeout, uint16_t advInterval,const char * deviceName,c
 
 void BLEProcess(void)
 {
-	hal_aci_tl_poll_rdy_line(0);
+	hal_aci_tl_poll_rdy_line(0); //get nordic chip comm
 	if (lib_aci_event_get(&_AciState, &_AciData))
 	{
 		aci_evt_t * aci_evt;
@@ -155,7 +163,6 @@ void BLEProcess(void)
 							SerialPuts("Error in ACI Setup\r\n");
 						}
 					}
-					
 					break;
 
 					case ACI_DEVICE_STANDBY:
@@ -165,10 +172,6 @@ void BLEProcess(void)
 					if (_SoftwareVersion[0] != 0x00)
 					{
 						lib_aci_set_local_data(&_AciState, PIPE_DEVICE_INFORMATION_SOFTWARE_REVISION_STRING_SET , (uint8_t *)&_SoftwareVersion, strlen(_SoftwareVersion));
-					}
-					if (_SystemID[0] != 0x00)
-					{
-						lib_aci_set_local_data(&_AciState, PIPE_DEVICE_INFORMATION_SYSTEM_ID_SET , (uint8_t *)&_SystemID, strlen(_SystemID));
 					}
 					if (_DeviceName[0] != 0x00)
 					{
@@ -239,8 +242,6 @@ void BLEProcess(void)
 			SerialPuts("ACI_EVT_DISCONNECTED\r\n");
 		
 			lib_aci_connect(_AdvTimeout, _AdvInterval);
-
-			
 			break;
 
 			case ACI_EVT_DATA_RECEIVED:
@@ -306,7 +307,7 @@ uint8_t BLEIsReady()
 //private
 static void BLETxHandler()
 {
-	//send queue works not properly so wait till ACI_EVT_DATA_CREDIT says message sent (Send busy)
+	//send queue works not properly, so wait till ACI_EVT_DATA_CREDIT says message sent (Send busy)
 	if(!_IsConnected)
 	{
 		_TxHandling.PipeCountSend = 0;
@@ -360,6 +361,5 @@ static void BLERxHandler(uint8_t characteristic, uint8_t* value,uint8_t len)
 			}
 		}
 	}
-	
 }
 

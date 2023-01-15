@@ -2,10 +2,15 @@
  * USBCDC.h
  *
  * Created: 23.06.2022 20:03:28
- *  Author: Siegwart
- */ 
-
-
+ * Used by: Siegwart
+ * Created:
+ * M2 USB communication subsystem
+ * version: 2.3
+ * date: March 21, 2013
+ * authors: J. Fiene & J. Romano
+ * https://github.com/PennRobotics/acrobot
+ */
+ 
 #ifndef USBCDC_H_
 #define USBCDC_H_
 
