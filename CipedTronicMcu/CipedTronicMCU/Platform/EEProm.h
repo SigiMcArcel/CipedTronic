@@ -10,6 +10,7 @@
 #ifndef EEPROM_H_
 #define EEPROM_H_
 
+#define EEPROM_BYTE_SIZE 1024
 //EPPROM Mapping
 #define EEPROM_ADR_COUNTER 0
 #define EEPROM_LEN_COUNTER 4
@@ -25,14 +26,15 @@
 /// </summary>
 /// <param name="address">byte address</param>
 /// <param name="val"<value>/param>
-void EEPROMWrite32(uint16_t address, uint32_t data);
+/// <return>-1 = invalid address</return>
+int8_t EEPROMWrite32(uint16_t address, uint32_t data);
 
 /// <summary>
 /// Reads uint32 from EEPROM
 /// </summary>
 /// <param name="address">byte address</param>
 /// <param name="val">value</param>
-/// <return>The value</return>
+/// <return>The value or 0 on invlaid address</return>
 uint32_t EEPROMRead32(uint16_t address);
 
 /// <summary>
@@ -41,14 +43,15 @@ uint32_t EEPROMRead32(uint16_t address);
 /// <param name="address">byte address</param>
 /// <param name="data">the string</param>
 /// <param name="len">lenght</param>
-/// <return>The value</return>
-void EEPROMReadChar(uint16_t address, char* data,int32_t len);
+/// <return>-1 = invalid address</return>
+int8_t EEPROMReadChar(uint16_t address, char* data,int32_t len);
 
 /// <summary>
 /// Writes char to EEPROM
 /// </summary>
 /// <param name="address">byte address</param>
 /// <param name="data">the string</param>
-/// <return>the string</return>
-void EEPROMWriteChar(uint16_t address, char* data,int32_t len);
+/// <param name="len">lenght</param>
+/// <return>-1 = invalid address</return>
+int8_t EEPROMWriteChar(uint16_t address, char* data,int32_t len);
 #endif /* EEPROM_H_ */
