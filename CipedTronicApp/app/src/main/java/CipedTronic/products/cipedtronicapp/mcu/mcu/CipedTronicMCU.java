@@ -11,7 +11,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Abstraction of the cipedTronic device
+ * - Configuring, starts and controlling the BLE Service
+ * - calculates the recieved data to readable values
+ */
 public class CipedTronicMCU extends  BLEDevice{
+
+
+        private final long CipedStateRunning = 0x00000001;
+        private final long CipedStateError = 0x00000002;
+        private final long CipedStateLowBat = 0x00000004;
+        private final long CipedStateMove = 0x00000008;
+        private final long CipedStateLightOn = 0x000000010;
+        private final long CipedStateAlarmActive = 0x000000020;
+
 
     private static volatile CipedTronicMCU _Instance = null;
     public static CipedTronicMCU getInstance()
@@ -31,14 +45,11 @@ public class CipedTronicMCU extends  BLEDevice{
     }
 
     private final long MCU_CMD_RESET_COUNTER = 0x01;
-    public static final UUID PULSES_PER_SECOND_UUID = UUID.fromString("00001236-0000-1000-8000-00805f9b34fb");
-    public static final UUID PULSES_PER_SECOND_MAX_UUID = UUID.fromString("00001237-0000-1000-8000-00805f9b34fb");
-    public static final UUID PULSES_PER_SECOND_AVG_UUID = UUID.fromString("00001238-0000-1000-8000-00805f9b34fb");
-    public static final UUID PULSES_UUID = UUID.fromString("00001239-0000-1000-8000-00805f9b34fb");
-    public static final UUID CONTROL_UUID = UUID.fromString("00001240-0000-1000-8000-00805f9b34fb");
-    public static final UUID SYSTEMID_UUID = UUID.fromString("00002a23-0000-1000-8000-00805f9b34fb");
+    public static final UUID CIPED_MEASUREMENT_CHARACTER_UUID = UUID.fromString("b1fb0001-f607-42a1-827d-f84ae6bdf20a");
+    public static final UUID CIPED_CONTROL_POINT_CHARACTER_UUID = UUID.fromString("b1fb0002-f607-42a1-827d-f84ae6bdf20a");
 
     private List<OnCipedTronicDeviceListener> _Listeners = new ArrayList<>();
+    private CipedTronicControlPoint _CipedTronicControlPoint = new CipedTronicControlPoint(this,CIPED_CONTROL_POINT_CHARACTER_UUID);
 
     private double pi = 3.14159265358979;
     private double _PulsesPerRevolution = 18.0;
@@ -48,24 +59,22 @@ public class CipedTronicMCU extends  BLEDevice{
     private double _VelocityAvg = 0.0;
     private double _Distance = 0.0;
 
-    //ciped mcu
-    private long _Pulses = 0;
-    private long _PulsesPerSecond = 0;
-    private long _PulsesPerSecondMax = 0;
-    private long _PulsesPerSecondAverage = 0;
-    private long _Id = 0;
-    private long _IdFromDevice = 0;
+    //ciped mcu data
+    private long    _Pulses = 0;
+    private long    _PulsesPerSecond = 0;
+    private long    _PulsesPerSecondMax = 0;
+    private long    _PulsesPerSecondAverage = 0;
+    private long    _CipedState;
+    private boolean _LightOn = false;
+    private boolean _AlarmOn = false;
     //Bluetooth
-    public static final UUID CIPEDTRONIC_UUID = UUID.fromString("00001235-0000-1000-8000-00805f9b34fb");
+    public static final UUID CIPED_SERVICE_UUID = UUID.fromString("b1fb1816-f607-42a1-827d-f84ae6bdf20a");
 
     private CipedtronicData mcuData = new CipedtronicData();
 
     public CipedTronicMCU() {
         super();
-        addNotifiationCharacteristic(PULSES_PER_SECOND_UUID);
-        addNotifiationCharacteristic(PULSES_PER_SECOND_MAX_UUID);
-        addNotifiationCharacteristic(PULSES_PER_SECOND_AVG_UUID);
-        addNotifiationCharacteristic(PULSES_UUID);
+        addNotifiationCharacteristic(CIPED_MEASUREMENT_CHARACTER_UUID);
         setOnBLEDeviceListener(_OnBLEDeviceListener);
     }
 
@@ -95,9 +104,22 @@ public class CipedTronicMCU extends  BLEDevice{
         mcuData.PulsesPerSecond = String.format("%d",_PulsesPerSecond);
 
 
-        for (OnCipedTronicDeviceListener listener:_Listeners
-        ) {
-            listener.onDataUpdate(mcuData);
+
+    }
+
+    public void decodeCipedState(long state )
+    {
+        mcuData.StateLight = false;
+        mcuData.StateAlarm = false;
+        _LightOn = false;
+        _AlarmOn = false;
+        if((state & CipedStateLightOn) > 0){
+            mcuData.StateLight = true;
+            _LightOn = true;
+        }
+        if((state & CipedStateAlarmActive) >0){
+            mcuData.StateAlarm = true;
+            _AlarmOn = true;
         }
     }
 
@@ -125,28 +147,29 @@ public class CipedTronicMCU extends  BLEDevice{
     {
         _RadiusOfWheelMM = r;
     }
-
     public void setPulsesPerRevolution(int p)
     {
         _PulsesPerRevolution = p;
     }
+    public boolean getLight(){return _LightOn;}
+    public boolean getAlarm(){return  _AlarmOn;}
+
+
+    public void setLight(boolean on){
+        _CipedTronicControlPoint.SetLight(on);
+    }
+    public void setAlarm(boolean on) {
+        _CipedTronicControlPoint.SetAlarm(on);
+    }
 
 
     public void ResetMCU() {
-        long data = 1;
-        //dont use ByteBuffer it's crap
-        byte[] buffer = new byte[4];
-        //send liitle endian
-        buffer[0] = (byte)(data & 0xFF);
-        buffer[1] = (byte)((data & 0xFF00)>>8);
-        buffer[2] = (byte)((data & 0xFF0000)>>16);
-        buffer[3] = (byte)((data & 0xFF000000)>>24);
-        this.writeCharacteristic(CONTROL_UUID,buffer);
+        _CipedTronicControlPoint.ResetCounter();
     }
 
     public void createDevice(Context context,String address) {
 
-        createDevice(context,address,"CIPED",CIPEDTRONIC_UUID,true);
+        createDevice(context,address,"CIPED",CIPED_SERVICE_UUID,true);
     }
     BLEDevice.OnBLEDeviceListener _OnBLEDeviceListener = new OnBLEDeviceListener() {
         @Override
@@ -160,31 +183,35 @@ public class CipedTronicMCU extends  BLEDevice{
         }
 
         @Override
+        public void onDescriptionRead(UUID characteristicUUID, UUID descriptionUUID, byte[] value) {
+
+        }
+
+        @Override
         public void onCharacteristicNotification(UUID characteristicUUID, byte[] value) {
-            ByteBuffer buffer = ByteBuffer.allocate(4);//   .wrap(value);
+            ByteBuffer buffer = ByteBuffer.allocate(20);//   .wrap(value);
             buffer.order(java.nio.ByteOrder.LITTLE_ENDIAN);
-            if(value.length != 4)
+            if(value.length != 20)
             {
                 return;
             }
 
             buffer.put(value);
-            if(characteristicUUID.compareTo(PULSES_PER_SECOND_UUID) == 0)
-            {
-                _PulsesPerSecond = (long)(buffer.getInt(0) & 0xFFFFFFFFL);
-            }else if(characteristicUUID.compareTo(PULSES_PER_SECOND_MAX_UUID) == 0)
-            {
-                _PulsesPerSecondMax = (long)(buffer.getInt(0) & 0xFFFFFFFFL);
-            }else if(characteristicUUID.compareTo(PULSES_PER_SECOND_AVG_UUID) == 0)
-            {
-                _PulsesPerSecondAverage = (long)(buffer.getInt(0) & 0xFFFFFFFFL);
-            }else if(characteristicUUID.compareTo(PULSES_UUID) == 0)
+            if(characteristicUUID.compareTo(CIPED_MEASUREMENT_CHARACTER_UUID) == 0)
             {
                 _Pulses = (long)(buffer.getInt(0) & 0xFFFFFFFFL);
+                _PulsesPerSecond = (long)(buffer.getInt(4) & 0xFFFFFFFFL);
+                _PulsesPerSecondMax = (long)(buffer.getInt(8) & 0xFFFFFFFFL);
+                _PulsesPerSecondAverage = (long)(buffer.getInt(12) & 0xFFFFFFFFL);
+                _CipedState = (long)(buffer.getInt(16) & 0xFFFFFFFFL);
             }else{
                 return;
             }
+            decodeCipedState(_CipedState);
             CalculateDeviceData();
+            for (OnCipedTronicDeviceListener listener:_Listeners) {
+                listener.onDataUpdate(mcuData);
+            }
 
         }
 

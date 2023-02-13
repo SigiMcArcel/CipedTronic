@@ -1,20 +1,42 @@
-/*
-    Abstracts a BLE device
-    Handles one service and several characteristics
+/**
+*    Abstracts a BLE device
+*    Handles one service and several characteristics
+*    Can used as a service
+*    Works fully asynchron*
+*
+*   Using:
+*   Create a Instance with the BLE Address, the service UUID it will handle and the Application Context
+*   add the characteristic it will notify
+*   Thread starts on constructor
+*
+*   Connect Sequencing:
+*   - connect->
+*        onConnectionStateChange(connected)->
+*            discover Services ->
+*                onServicesDiscovered->
+*                    set Notification->
+*                        ->Ready for use*
+*
+*  Commands:
+*        Initialize,
+*        Close,
+*        Connect,
+*        Disconnect,
+*        ScanDevices,
+*        WriteDescriptor,
+*        ReadDescriptor,
+*        ReadCharacteristic,
+*        WriteCharacteristic,
+*  events OnBLEDeviceListener:
+*        void OnStatusChanged(BLEDeviceStates state);
+*        void onCharacteristicRead(UUID characteristicUUID,byte[] value);
+*        void onCharacteristicNotification(UUID characteristicUUID,byte[] value);
+*        void onDescriptionRead(UUID characteristicUUID,UUID descriptionUUID,byte[] value);
+*        void onScanResult(List<BLEScannedDevice> devices, BLEDeviceStates state);
+*        void onError(BLEDeviceErrors error);
+*
+**/
 
-   Using:
-   Create a Instance with the BLE Address, the service UUID it will handle and the Application Context
-   add the characteristic it will notify
-
-   Connect Sequencing:
-   - connect->
-        onConnectionStateChange(connected)->
-            discover Services ->
-                onServicesDiscovered->
-                    set Notification->
-                        ->Ready for use
-
- */
 package CipedTronic.products.cipedtronicapp.mcu.BLE;
 
 import android.bluetooth.BluetoothAdapter;
@@ -87,15 +109,56 @@ public class BLEDevice extends Thread implements AutoCloseable{
         public Object Param5;
     }
 
+    /**
+     *
+     */
     public interface OnBLEDeviceListener
     {
+        /**
+         *
+         * @param state
+         */
         void OnStatusChanged(BLEDeviceStates state);
+
+        /**
+         *
+         * @param characteristicUUID
+         * @param value
+         */
         void onCharacteristicRead(UUID characteristicUUID,byte[] value);
+
+        /**
+         *
+         * @param characteristicUUID
+         * @param descriptionUUID
+         * @param value
+         */
+        void onDescriptionRead(UUID characteristicUUID,UUID descriptionUUID,byte[] value);
+
+        /**
+         *
+         * @param characteristicUUID
+         * @param value
+         */
         void onCharacteristicNotification(UUID characteristicUUID,byte[] value);
+
+        /**
+         *
+         * @param devices
+         * @param state
+         */
         void onScanResult(List<BLEScannedDevice> devices, BLEDeviceStates state);
+
+        /**
+         *
+         * @param error
+         */
         void onError(BLEDeviceErrors error);
     }
 
+    /**
+     *
+     */
     public enum BLEDeviceStates {
         None,
         NotInitalized,
@@ -201,6 +264,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
     private  BLEDeviceCommand _ActualCommand = null;
     private BLEDeviceErrors _Error = BLEDeviceErrors.Ok;
     private boolean _ScanActive = false;
+    private boolean _AutoConnectActive = false;
 
     String _Name = "";
     BLETimeOut _RestartTimeOut = new BLETimeOut();
@@ -245,47 +309,100 @@ public class BLEDevice extends Thread implements AutoCloseable{
         _NotificationCharacteristics.add(characteristic);
     }
 
-
+    /**
+     * Initializes and connects (if autoConnect = true) a Ble remote device with one service
+     * Fires a OnStatusChanged "connected" on success or a OnError event on fail
+     * @param context           Application context
+     * @param address           BLE Address as string
+     * @param name              The name of the device as string. Used as scan filter
+     * @param service           The UUID of the service
+     * @param autoConnect       Sets if the should be reconnect automatically
+	 */
     public void createDevice(Context context,String address,String name,UUID service,boolean autoConnect) {
         BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.Initialize,context,address,name,service,autoConnect);
         _CommandQueue.push(cmd);
     }
+
+    /**
+     * Closes the device (disconnect and deinitialize)
+     * Fires a OnStatusChanged "NotInitalized" on success or a OnError event on fail
+     */
     public void closeDevice() {
         BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.Close);
         _CommandQueue.push(cmd);
     }
+    /**
+     * Connects the device
+     * Fires a OnStatusChanged "Connected" on success or a OnError event on fail
+     */
     public void connectDevice() {
         BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.Connect);
         _CommandQueue.push(cmd);
     }
+    /**
+     * Disconnects the device
+     * Fires a OnStatusChanged "Disonnected" on success or a OnError  if fail
+     */
     public void disconnectDevice() {
         BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.Disconnect);
         _CommandQueue.push(cmd);
     }
-
+    /**
+     * Scans for devices
+     * The filter is set with the parameter name of createDevice
+     * Fires a onScanResult
+     */
     public void scanDevices()
     {
         BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.ScanDevices);
         _CommandQueue.push(cmd);
     }
+    /**
+     * Writes a description of a characteristic of the configured service
+     * Fires a OnError on fail
+     *
+     * @param characteristicUUID    The uuid of the characteristic
+     * @param descriptionUUID       The uuid of the description
+     * @param value                 The value as byte array
+     */
     public void writeDescription(UUID characteristicUUID,UUID descriptionUUID,byte[] value){
         BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.WriteDescriptor,characteristicUUID,descriptionUUID,value,null);
         _CommandQueue.push(cmd);
     }
+
+    /**
+     * Reads a description of a characteristic of the configured service
+     * Fires a onDescriptionRead or OnError if fail
+     *
+     * @param characteristicUUID    The uuid of the characteristic
+     * @param descriptionUUID       The uuid of the description
+     */
     public void readDescription(UUID characteristicUUID,UUID descriptionUUID) {
         BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.ReadDescriptor,characteristicUUID,descriptionUUID,null,null);
         _CommandQueue.push(cmd);
     }
+    /**
+     * Writes a characteristic of the configured service
+     * Fires a OnError if fail
+     *
+     * @param characteristicUUID The uuid of the characteristic
+     * @param value value as byte array
+     */
     public void writeCharacteristic(UUID characteristicUUID,byte[] value){
         BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.WriteCharacteristic,characteristicUUID,value,null,null);
         _CommandQueue.push(cmd);
     }
+    /**
+     * Reads a characteristic of the configured service
+     *
+     * @param characteristicUUID The uuid of the chararcteristic
+    */
     public void readCharacteristic(UUID characteristicUUID) {
         BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.ReadCharacteristic,characteristicUUID,null,null,null);
         _CommandQueue.push(cmd);
     }
 
-    //privates
+    //private functions
     private BLEDeviceErrors initializeAdapter() {
         _BluetoothManager = (BluetoothManager) _Context.getSystemService(Context.BLUETOOTH_SERVICE);
         if (_BluetoothManager == null) {
@@ -347,7 +464,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
     private BLEDeviceErrors connect() {
         Log.e("BLEDevice", "connect() ");
         try {
-            //occurs on invalid BLE address. doesnt matter for scanning devices
+            //occurs on invalid BLE address. does not used for scan
             if(_BluetoothGatt == null)
             {
                 return BLEDeviceErrors.CouldNotConnectDevice;
@@ -604,6 +721,11 @@ public class BLEDevice extends Thread implements AutoCloseable{
                     _ActualCommand = _CommandQueue.poll();
                     _CommandState = _ActualCommand.Command;
                 }
+                else{
+                    if(_AutoConnectActive){
+                            _CommandState = BLEDeviceCommandStates.Connect;
+                        }
+                }
                 break;
             }
             case Initialize: {
@@ -618,7 +740,9 @@ public class BLEDevice extends Thread implements AutoCloseable{
                     break;
                 }
                 _State = BLEDeviceStates.Disconnected;
-                _CommandState = BLEDeviceCommandStates.Connect;
+                if(_AutoConnect) {
+                    _CommandState = BLEDeviceCommandStates.Connect;
+                }
                 break;
             }
             case Close:
@@ -646,7 +770,8 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 {
                     if(_AutoConnect)
                     {
-                        _CommandState = BLEDeviceCommandStates.Connect;
+                        _AutoConnectActive = true;
+                        _CommandState = BLEDeviceCommandStates.Idle;
                         break;
                     }
                     else
@@ -658,6 +783,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 break;
             }
             case Connected: {
+                _AutoConnectActive = false;
                 _CommandState = BLEDeviceCommandStates.DiscoverServices;
                 Log.e("BLEDevice", "Connected ");
                 break;
@@ -921,7 +1047,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 Log.d("BLEDevice", "StatetChanged " + _CommandState.name());
                 _LastCommandState = _CommandState;
             }
-        }//while true
+        }
     }
 
     //callBacks

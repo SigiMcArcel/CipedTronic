@@ -15,6 +15,18 @@
             app:title="@string/radius_title"
             app:useSimpleSummaryProvider="true"/>
 
+        <CheckBoxPreference
+            app:key="device_light"
+            app:persistent="true"
+            app:title="light"
+            app:useSimpleSummaryProvider="true"/>
+
+        <CheckBoxPreference
+            app:key="device_alarm"
+            app:persistent="true"
+            app:title="alarm"
+            app:useSimpleSummaryProvider="true"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Bluetooth">

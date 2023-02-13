@@ -2,6 +2,7 @@ package CipedTronic.products.cipedtronicapp.ui.main;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.hardware.lights.Light;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -37,6 +38,8 @@ public class DataFragment extends Fragment {
     private TextView textViewDistance;
     private PageViewModel _VModel;
 
+    private boolean _Light = false;
+    private boolean _Alarm = false;
 
     public DataFragment() {
         // Required empty public constructor
@@ -46,6 +49,29 @@ public class DataFragment extends Fragment {
         DataFragment fragment = new DataFragment();
         Bundle args = new Bundle();
         return fragment;
+    }
+
+    private void setButtonState(CipedtronicData data) {
+        if(data.StateAlarm)
+        {
+            _Alarm = true;
+            binding.buttonAlarm.setBackgroundColor(Color.GREEN);
+        }
+        else
+        {
+            _Alarm = false;
+            binding.buttonAlarm.setBackgroundColor(Color.GRAY);
+        }
+        if(data.StateLight)
+        {
+            _Light = true;
+            binding.buttonLight.setBackgroundColor(Color.GREEN);
+        }
+        else
+        {
+            _Light = false;
+            binding.buttonLight.setBackgroundColor(Color.GRAY);
+        }
     }
 
     private void setTextViewContent(String velocity,String maxVelocity,String distance)
@@ -69,10 +95,16 @@ public class DataFragment extends Fragment {
         if(connected)
         {
             col = Color.BLACK;
+            binding.buttonAlarm.setEnabled(true);
+            binding.buttonReset.setEnabled(true);
+            binding.buttonLight.setEnabled(true);
         }
         else
         {
             col = Color.RED;
+            binding.buttonAlarm.setEnabled(false);
+            binding.buttonReset.setEnabled(false);
+            binding.buttonLight.setEnabled(false);
         }
 
         textViewDistance.setTextColor(col);
@@ -109,12 +141,25 @@ public class DataFragment extends Fragment {
                 _VModel.resetMCU();
             }
         });
+        binding.buttonLight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                _VModel.setLight(!_Light);
+            }
+        });
+        binding.buttonAlarm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                _VModel.setAlarm(!_Alarm);
+            }
+        });
 
         _VModel = new ViewModelProvider(getActivity()).get(PageViewModel.class);
         _VModel.getData().observe(getViewLifecycleOwner(), new Observer<CipedtronicData>() {
             @Override
             public void onChanged(@Nullable CipedtronicData data) {
                 setTextViewContent(data.Velocity, data.MaxVelocity, data.Distance);
+                setButtonState(data);
             }
         });
         _VModel.getState().observe(getViewLifecycleOwner(), new Observer<String>() {

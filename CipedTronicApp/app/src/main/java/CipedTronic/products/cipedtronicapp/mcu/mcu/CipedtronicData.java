@@ -7,5 +7,10 @@ public class CipedtronicData {
     public String Distance;
     public String Pulses;
     public String PulsesPerSecond;
-
+    public boolean StateRunning;
+    public boolean StateError;
+    public boolean StateLowBat;
+    public boolean StateMove;
+    public boolean StateLight;
+    public boolean StateAlarm;
 }

@@ -33,7 +33,6 @@
 #include <avr/interrupt.h>
 #include "Platform/Timer.h"
 #include "Platform/GPIO.h"
-#include "Platform/Comparator.h"
 #include "Platform/Counter.h"
 #include "Platform/Serial.h"
 #include "CipedTronic/BLE.h"

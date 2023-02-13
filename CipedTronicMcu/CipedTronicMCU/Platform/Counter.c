@@ -37,7 +37,6 @@
 
 #define PROCESS_CYCLE 1000 //defines the interval in ms, where the speed is calculated
 static volatile uint32_t _Counter = 0x0; //Main counter
-static volatile uint32_t _LastCounterAdding = 0;//Last counter value at which the ATMEGA counter was added, for handling overflows
 static volatile uint32_t _LastCounter = 0; //save last countervalue for calculate velocity
 static volatile uint32_t _CounterPerSecond = 0x0; //Velocity
 static volatile uint32_t _MaxCounterPerSecond = 0x0; //Max velocity
@@ -52,17 +51,8 @@ static void CounterTimerCB(void);
 void CounterHandler()
 {
 	uint16_t tmpCount = TCNT1; //get value from HW Counter
-	
-	if(tmpCount >_LastCounterAdding)
-	{
-		_Counter += (tmpCount - _LastCounterAdding);
-	}
-	//overflow 
-	else if(tmpCount < _LastCounterAdding)
-	{
-		_Counter +=  0xffffffff - _LastCounterAdding + tmpCount;
-	}
-	_LastCounterAdding = tmpCount;
+	TCNT1 = 0; //delete it
+	_Counter += tmpCount;
 }
 
 void CounterInit()
