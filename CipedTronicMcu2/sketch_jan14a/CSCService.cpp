@@ -34,6 +34,7 @@ CSCService::CSCService(uint16_t features, BLEServer *pServer)
 {
    if(_Server != NULL)
    {
+  
       _Service = pServer->createService(CSC_SERVICE_UUID);
       if(_Service != NULL)
       {

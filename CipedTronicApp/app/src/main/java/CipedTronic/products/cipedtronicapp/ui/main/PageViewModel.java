@@ -71,15 +71,16 @@ public class PageViewModel extends AndroidViewModel {
         @Override
         public void OnTick() {
             if(_CipedTronicMCU != null ) {
-                CipedtronicData cipedTronicData = new CipedtronicData();
+                CipedtronicData cipedTronicData = _CipedTronicMCU.getData();
                 String state = _CipedTronicMCU.getDeviceState();
-                cipedTronicData.Distance = _CipedTronicMCU.getDistance();
+               /* cipedTronicData.Distance = _CipedTronicMCU.getDistance();
                 cipedTronicData.MaxVelocity = _CipedTronicMCU.getMaxVelocity();
                 cipedTronicData.Pulses = _CipedTronicMCU.getPulses();
                 cipedTronicData.PulsesPerSecond = _CipedTronicMCU.getPulsesPerSecond();
                 cipedTronicData.Velocity = _CipedTronicMCU.getVelocity();
                 cipedTronicData.StateLight = _CipedTronicMCU.getLight();
-                cipedTronicData.StateAlarm = _CipedTronicMCU.getAlarm();
+                cipedTronicData.StateAlarm = _CipedTronicMCU.getAlarm();*/
+
                 _CipedData.postValue(cipedTronicData);
                 _StateString.postValue(state);
             }

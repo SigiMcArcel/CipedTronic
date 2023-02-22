@@ -13,11 +13,15 @@ CipedService::CipedService(BLEServer *pServer,CipedServiceEvents* listener)
 ,_Service(NULL)
 ,_Listener(listener)
 ,_LastTick(0)
+,_LastTick250(0)
+,_LastTick500(0)
 ,_CipedMeasurement()
 ,_DeviceConnected(false)
+,_Toggle(false)
 {
    if(_Server != NULL)
    {
+      pinMode(D10, OUTPUT);
       _Server->setCallbacks(this);
       _Service = pServer->createService(CIPED_SERVICE_UUID);
       if(_Service != NULL)
@@ -30,7 +34,7 @@ CipedService::CipedService(BLEServer *pServer,CipedServiceEvents* listener)
         
         _CipedMeasurementCharacteristic.setCallbacks(this);    
         _CipedControlPointCharacteristic.setCallbacks(this);    
-        
+         BLEDevice::startAdvertising();    
       }
    }
 }
@@ -59,12 +63,46 @@ void CipedService::stop()
 
 void CipedService::process()
 {
-    uint32_t tick = MSTimer::Instance()->getTick();
+  uint32_t tick = MSTimer::Instance()->getTick();
   if(tick - _LastTick > 1000)
   {
-     
       sendCipedMeasurementCharacteristicValue(&_CipedMeasurement);    
       _LastTick = tick;
+  }
+
+  if(_DeviceConnected)
+  {
+    if(tick - _LastTick250 > 125)
+    {
+      if(_Toggle)
+      {
+        digitalWrite(D10,HIGH);
+        _Toggle = false;
+      }
+      else
+      {
+        digitalWrite(D10,LOW);
+        _Toggle = true;      
+      }
+      _LastTick250 = tick;        
+    }
+  }
+  else
+  {
+    if(tick - _LastTick500 > 500)
+    {
+      if(_Toggle)
+      {
+        digitalWrite(D10,HIGH);
+        _Toggle = false;
+      }
+      else
+      {
+        digitalWrite(D10,LOW);
+          _Toggle = true;      
+      }
+       _LastTick500 = tick;          
+    }    
   }
 }
 
@@ -79,7 +117,7 @@ void CipedService::sendCipedMeasurementCharacteristicValue(CipedMeasurement* cip
   {
     return;    
   }
-   Serial.printf("send %d %d %d %d \r\n",cipedMeasurement->Pulses,cipedMeasurement->PulsesPerSecond,cipedMeasurement->PulsesPerSecondMax,cipedMeasurement->PulsesPerSecondAvg);
+   //Serial.printf("send %d %d %d %d 0x%x \r\n",cipedMeasurement->Pulses,cipedMeasurement->PulsesPerSecond,cipedMeasurement->PulsesPerSecondMax,cipedMeasurement->PulsesPerSecondAvg,cipedMeasurement->State);
   _CipedMeasurementCharacteristic.setValue((uint8_t*)cipedMeasurement,sizeof(CipedMeasurement));  
   _CipedMeasurementCharacteristic.notify();
 }
@@ -196,4 +234,5 @@ void CipedService::onWrite(BLEDescriptor* pDescriptor)
     void CipedService::onDisconnect(BLEServer* pServer) {
       _DeviceConnected = false;
       Serial.println("disconnected");
+       BLEDevice::startAdvertising();
     }

@@ -8,6 +8,7 @@ BLEServer* _Server;
 Ciped* _Ciped = NULL;;
 CipedService* _CipedService = NULL;
 
+
 class CipedEvents: public CipedServiceEvents
 {
 public:
@@ -59,6 +60,7 @@ public:
 void setup() {
   Serial.begin(115200);
   Serial.println("Starting BLE work!");
+  
 
   BLEDevice::init("CIPED");
   _Server = BLEDevice::createServer();
@@ -67,13 +69,14 @@ void setup() {
     _Ciped = new Ciped();
     _CipedService = new CipedService(_Server,new CipedEvents());
     _CipedService->start();
-    BLEDevice::startAdvertising();
+    
   }  
 
 }
  
 void loop() {
   CipedMeasurement measure = {0};
+  
   _Ciped->process();
   measure.Pulses = _Ciped->getPulses();
   measure.PulsesPerSecond = _Ciped->getPulsesPerSecond();

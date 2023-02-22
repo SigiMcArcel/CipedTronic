@@ -24,8 +24,8 @@ public class CipedTronicMCU extends  BLEDevice{
         private final long CipedStateLowBat = 0x00000004;
         private final long CipedStateMove = 0x00000008;
         private final long CipedStateLightOn = 0x000000010;
-        private final long CipedStateAlarmActive = 0x000000020;
-
+        private final long CipedStateAlarmActivated = 0x000000020;
+        private final long CipedStateAlarmActive = 0x000000040;
 
     private static volatile CipedTronicMCU _Instance = null;
     public static CipedTronicMCU getInstance()
@@ -58,12 +58,14 @@ public class CipedTronicMCU extends  BLEDevice{
     private double _VelocityMax = 0.0;
     private double _VelocityAvg = 0.0;
     private double _Distance = 0.0;
+    private double _BatteryVoltage;
 
     //ciped mcu data
     private long    _Pulses = 0;
     private long    _PulsesPerSecond = 0;
     private long    _PulsesPerSecondMax = 0;
     private long    _PulsesPerSecondAverage = 0;
+    private long    _BatteryVoltageMillvolt = 0;
     private long    _CipedState;
     private boolean _LightOn = false;
     private boolean _AlarmOn = false;
@@ -93,6 +95,7 @@ public class CipedTronicMCU extends  BLEDevice{
         _VelocityMax = (double) _PulsesPerSecondMax * _RadiusOfWheelMM / 1000 * 2 * pi * 3600 / _PulsesPerRevolution / 1000;
         _VelocityAvg = (double) _PulsesPerSecondAverage * _RadiusOfWheelMM / 1000 * 2 * pi * 3600 / _PulsesPerRevolution / 1000;
         _Distance = (double) _Pulses * _RadiusOfWheelMM / 1000 * 2 * pi / _PulsesPerRevolution / 1000;
+        _BatteryVoltage = (double)_BatteryVoltageMillvolt /1000;
         //_Revolutions = _Pulses / _PulsesPerRevolution;
 
 
@@ -102,7 +105,7 @@ public class CipedTronicMCU extends  BLEDevice{
         mcuData.Distance = String.format("%.2f",_Distance);
         mcuData.Pulses = String.format("%d",_Pulses);
         mcuData.PulsesPerSecond = String.format("%d",_PulsesPerSecond);
-
+        mcuData.BatteryVoltage = String.format("%.2f",_BatteryVoltage);
 
 
     }
@@ -111,6 +114,12 @@ public class CipedTronicMCU extends  BLEDevice{
     {
         mcuData.StateLight = false;
         mcuData.StateAlarm = false;
+        mcuData.StateMove = false;
+        mcuData.StateLowBat = false;
+        mcuData.StateRunning = false;
+        mcuData.StateError = false;
+        mcuData.StateAlarmActive = false;
+
         _LightOn = false;
         _AlarmOn = false;
         if((state & CipedStateLightOn) > 0){
@@ -120,6 +129,21 @@ public class CipedTronicMCU extends  BLEDevice{
         if((state & CipedStateAlarmActive) >0){
             mcuData.StateAlarm = true;
             _AlarmOn = true;
+        }
+        if((state & CipedStateAlarmActivated) >0){
+            mcuData.StateAlarmActive = true;
+        }
+        if((state & CipedStateError) >0){
+            mcuData.StateError = true;
+        }
+        if((state & CipedStateMove) >0){
+            mcuData.StateMove = true;
+        }
+        if((state & CipedStateLowBat) >0){
+            mcuData.StateLowBat = true;
+        }
+        if((state & CipedStateRunning) >0){
+            mcuData.StateRunning = true;
         }
     }
 
@@ -143,6 +167,10 @@ public class CipedTronicMCU extends  BLEDevice{
     {
         return String.valueOf(_PulsesPerSecond);
     }
+    public String getBatteryVoltage()
+    {
+        return String.valueOf(_BatteryVoltage);
+    }
     public void setWheelRadius(double r)
     {
         _RadiusOfWheelMM = r;
@@ -153,6 +181,10 @@ public class CipedTronicMCU extends  BLEDevice{
     }
     public boolean getLight(){return _LightOn;}
     public boolean getAlarm(){return  _AlarmOn;}
+    public CipedtronicData getData()
+    {
+        return mcuData;
+    }
 
 
     public void setLight(boolean on){

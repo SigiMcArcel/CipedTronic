@@ -9,7 +9,8 @@ enum class CipedStates_e:uint32_t
   LowBat = 0x00000004,
   Move = 0x00000008,
   LightOn = 0x000000010,
-  AlarmActive = 0x000000020  
+  AlarmActived = 0x000000020,
+  AlarmActive = 0x000000040  
 };
 
 class Ciped

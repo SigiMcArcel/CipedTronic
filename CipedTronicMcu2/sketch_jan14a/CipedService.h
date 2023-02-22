@@ -63,9 +63,13 @@ class CipedService:public BLECharacteristicCallbacks,public BLEDescriptorCallbac
   CipedServiceEvents* _Listener;
 
   uint32_t _LastTick;
+  uint32_t _LastTick500;
+  uint32_t _LastTick250;
   CipedMeasurement _CipedMeasurement;
   bool _DeviceConnected;
   uint32_t _State;
+  bool _Toggle;
+
   
   void processCipedControlPoint(uint8_t* data);
   void processCipedControlPointSetPulsesPerRevolution(CipedControlPoint* data);

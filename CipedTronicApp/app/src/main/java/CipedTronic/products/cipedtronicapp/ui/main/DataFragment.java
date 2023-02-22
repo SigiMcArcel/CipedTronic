@@ -36,6 +36,7 @@ public class DataFragment extends Fragment {
 
     private TextView textViewvelocity;
     private TextView textViewDistance;
+    private TextView textViewStates;
     private PageViewModel _VModel;
 
     private boolean _Light = false;
@@ -52,7 +53,7 @@ public class DataFragment extends Fragment {
     }
 
     private void setButtonState(CipedtronicData data) {
-        if(data.StateAlarm)
+        if(data.StateAlarmActive)
         {
             _Alarm = true;
             binding.buttonAlarm.setBackgroundColor(Color.GREEN);
@@ -74,19 +75,47 @@ public class DataFragment extends Fragment {
         }
     }
 
-    private void setTextViewContent(String velocity,String maxVelocity,String distance)
+    private void setTextViewContent(CipedtronicData data)
     {
-        String h = velocity + " km/h";
+        String States = "";
+        String h = data.Velocity + " km/h";
         SpannableString ss1=  new SpannableString(h);
         textViewvelocity.setTextSize(80);
         textViewDistance.setTextSize(80);
 
         ss1.setSpan(new RelativeSizeSpan(0.2f), h.length() - 4, h.length() , 0); // set size
         textViewvelocity.setText(ss1);
-        h = distance + " km";
+        h = data.Distance + " km";
         ss1=  new SpannableString(h);
         ss1.setSpan(new RelativeSizeSpan(0.2f), h.length() - 2, h.length() , 0); // set size
         textViewDistance.setText(ss1);
+
+        States += "Pulses = " + data.Pulses + "\r\nPulses per second = " + data.PulsesPerSecond + "\r\n";
+        if(data.StateLight)
+        {
+            States += "Light On\r\n";
+        }
+        if(data.StateError)
+        {
+            States += "Error\r\n";
+        }
+        if(data.StateLowBat)
+        {
+            States += "Low Battery\r\n";
+        }
+        if(data.StateMove)
+        {
+            States += "Move\r\n";
+        }
+        if(data.StateRunning)
+        {
+            States += "Running\r\n";
+        }
+        if(data.StateAlarm)
+        {
+            States += "Alarm Active\r\n";
+        }
+        textViewStates.setText(States);
     }
 
     private void setDisconnect(boolean connected)
@@ -132,8 +161,9 @@ public class DataFragment extends Fragment {
 
         textViewvelocity =  binding.textViewVelocity;
         textViewDistance = binding.textViewDistance;
+        textViewStates = binding.textViewInfo;
 
-        setTextViewContent("0.00","0.00","0.00");
+        setTextViewContent(new CipedtronicData());
         setDisconnect(false);
         binding.buttonReset.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -158,7 +188,7 @@ public class DataFragment extends Fragment {
         _VModel.getData().observe(getViewLifecycleOwner(), new Observer<CipedtronicData>() {
             @Override
             public void onChanged(@Nullable CipedtronicData data) {
-                setTextViewContent(data.Velocity, data.MaxVelocity, data.Distance);
+                setTextViewContent(data);
                 setButtonState(data);
             }
         });

@@ -1,3 +1,4 @@
+#include "esp32-hal-gpio.h"
 #include "Ciped.h"
 #include <EEPROM.h>
 
@@ -21,13 +22,16 @@ Ciped::Ciped()
   ,_SavingState(0)
   ,_State(0)
 
+
 {
-  pinMode(2, INPUT_PULLUP);
+  pinMode(D1, INPUT_PULLUP);
+
 	attachInterrupt(D1, isr, RISING);
   pinMode(A0, INPUT);
   EEPROM.begin(20);
   
   loadFromEeprom();
+ 
 }
 
 Ciped::~Ciped ()
@@ -38,8 +42,11 @@ Ciped::~Ciped ()
 void Ciped::saveToEeprom()
 {
     EEPROM.writeULong(0,_Pulses);
+    EEPROM.commit();
     EEPROM.writeULong(4,_PulsesPerSecondMax);
+    EEPROM.commit();
     EEPROM.writeULong(8,_PulsesPerSecondAvg);
+    EEPROM.commit();
 }
 
 void Ciped::loadFromEeprom()
@@ -48,18 +55,12 @@ void Ciped::loadFromEeprom()
    if(test == 0xFFFFFFFF)
    {
       Serial.printf("eprom init %d\r\n",test);
-      EEPROM.writeULong(0,_Pulses);
-      EEPROM.commit();
-      EEPROM.writeULong(4,_PulsesPerSecondMax);
-      EEPROM.commit();
-      EEPROM.writeULong(8,_PulsesPerSecondAvg);
-      EEPROM.commit();
+     saveToEeprom();
       return;
    }
    _LastPulses =_Pulses = EEPROM.readULong(0);
    _PulsesPerSecondMax = EEPROM.readULong(4);
    _PulsesPerSecondAvg = EEPROM.readULong(8);
-   Serial.printf("eprom read %d %d %d \r\n",_Pulses,_PulsesPerSecondMax,_PulsesPerSecondAvg);
 }
 
 //save pulses a 30 second  after the bike stand still or battery is low
@@ -73,7 +74,6 @@ void Ciped::loadFromEeprom()
         if(_Move)
         {
            _SavingState = 10;
-           Serial.printf(" _SavingState = 10\r\n");
            break;
         }  
         break;      
@@ -81,7 +81,6 @@ void Ciped::loadFromEeprom()
         {
            if(!_Move)
            {
-               Serial.printf(" _SavingState = 20\r\n");
               _SavingState = 20;
               break;             
            }
@@ -91,15 +90,14 @@ void Ciped::loadFromEeprom()
         {
           if(_Move)
           {
-            Serial.printf(" _SavingState = move\r\n");
               _SavingState = 10;
               _StandstillTick = 0;
               break;              
           }
            _StandstillTick++;
-           if(_StandstillTick > 20)
+           if(_StandstillTick > 10)
            {
-               Serial.printf("Standstill\r\n");
+              
                saveToEeprom();
                _SavingState = 0;
                _StandstillTick = 0;
@@ -150,17 +148,19 @@ uint32_t Ciped::getPulsesPerSecondAvg()
   return _PulsesPerSecondAvg;
 }
 
+
 void  Ciped::activateAlarm(bool alarm)
 {
-  if(alarm)
-  {
-    _State |= (uint32_t)CipedStates_e::AlarmActive;
-  }
-  else
-  {
-    _State &= ~(uint32_t)CipedStates_e::AlarmActive;
-  }
   _AlarmActivated = alarm;
+   if(_AlarmActivated)
+    {
+      _State |= (uint32_t)CipedStates_e::AlarmActived;
+    }
+    else
+    {
+      _State &= ~(uint32_t)CipedStates_e::AlarmActived;
+      _AlarmActivated = false;
+    }
 }
 void Ciped::resetAlarm()
 {
@@ -192,16 +192,22 @@ void Ciped::clear()
   _PulsesPerSecond = 0;
   _PulsesPerSecondMax = 0;
   _PulsesPerSecondAvg = 0;
+  saveToEeprom();
 }
 
 void Ciped::process()
 {
   uint32_t tick = MSTimer::Instance()->getTick();
-  if(tick - _LastTick > 1000)
+  uint32_t pulsesTmp = 0;
+  if(tick - _LastTick >= 1000)
   {
+    pulsesTmp = _Pulses;
+
+   
+    
     _LastTick = tick;
-    _PulsesPerSecond = _Pulses - _LastPulses;
-    if(_LastPulses != _Pulses)
+    _PulsesPerSecond = pulsesTmp - _LastPulses;
+    if(_LastPulses != pulsesTmp)
     {
       _Move = true;
     }
@@ -209,7 +215,8 @@ void Ciped::process()
     {
       _Move = false;    
     }
-    _LastPulses = _Pulses;
+    _LastPulses = pulsesTmp;
+    
     saveTiming();
     
     if(_PulsesPerSecond > _PulsesPerSecondMax)
@@ -227,6 +234,7 @@ void Ciped::process()
     {
       _State &= ~(uint32_t)CipedStates_e::LowBat;
     }
+    
     if(_Move)
     {
       _State |= (uint32_t)CipedStates_e::Move;
@@ -235,6 +243,16 @@ void Ciped::process()
     {
       _State &= ~(uint32_t)CipedStates_e::Move;
     }
+
+     if(_Move && _AlarmActivated)
+    {
+      _State |= (uint32_t)CipedStates_e::AlarmActive;
+    }
+    else
+    {
+      _State &= ~(uint32_t)CipedStates_e::AlarmActive;
+    }
+     
   }
 }
  
