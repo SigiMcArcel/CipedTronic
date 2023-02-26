@@ -39,12 +39,12 @@ CipedService::CipedService(BLEServer *pServer,CipedServiceEvents* listener)
    }
 }
 
-CipedService::~CipedService ()
+CipedTronic::CipedService::~CipedService ()
 {
  
 }
  
-void CipedService::start()
+void CipedTronic::CipedService::start()
 {
    if(_Service != NULL)
   {
@@ -53,7 +53,7 @@ void CipedService::start()
   }
 }
 
-void CipedService::stop()
+void CipedTronic::CipedTronic::CipedService::stop()
 {
    if(_Service != NULL)
   {
@@ -61,7 +61,7 @@ void CipedService::stop()
   }
 }
 
-void CipedService::process()
+void CipedTronic::CipedService::process()
 {
   uint32_t tick = MSTimer::Instance()->getTick();
   if(tick - _LastTick > 1000)
@@ -106,12 +106,12 @@ void CipedService::process()
   }
 }
 
-void CipedService::setCipedData(CipedMeasurement* cipedMeasurement)
+void CipedTronic::CipedService::setCipedData(CipedMeasurement* cipedMeasurement)
 {
     memcpy(&_CipedMeasurement,cipedMeasurement,sizeof(CipedMeasurement));
 }
 
-void CipedService::sendCipedMeasurementCharacteristicValue(CipedMeasurement* cipedMeasurement)
+void CipedTronic::CipedService::sendCipedMeasurementCharacteristicValue(CipedMeasurement* cipedMeasurement)
 {
   if(!_DeviceConnected)
   {
@@ -122,7 +122,7 @@ void CipedService::sendCipedMeasurementCharacteristicValue(CipedMeasurement* cip
   _CipedMeasurementCharacteristic.notify();
 }
 
-void CipedService::processCipedControlPoint(uint8_t* data)
+void CipedTronic::CipedService::processCipedControlPoint(uint8_t* data)
 {
   CipedControlPoint* cipedControlPointData = (CipedControlPoint*)data;
   if(cipedControlPointData == NULL)
@@ -162,7 +162,7 @@ void CipedService::processCipedControlPoint(uint8_t* data)
 }
 
 
-void CipedService::processCipedControlPointSetPulsesPerRevolution(CipedControlPoint* data)
+void CipedTronic::CipedService::processCipedControlPointSetPulsesPerRevolution(CipedControlPoint* data)
 {
   if(_Listener)
   {
@@ -171,7 +171,7 @@ void CipedService::processCipedControlPointSetPulsesPerRevolution(CipedControlPo
   processCipedControlPointResponse(data);
 }
 
-void CipedService::processCipedControlResetCounter(CipedControlPoint* data)
+void CipedTronic::CipedService::processCipedControlResetCounter(CipedControlPoint* data)
 {
   if(_Listener)
   {
@@ -179,7 +179,8 @@ void CipedService::processCipedControlResetCounter(CipedControlPoint* data)
   }
   processCipedControlPointResponse(data);
 }
-void CipedService::processCipedControlPointSetLight(CipedControlPoint* data)
+
+void CipedTronic::CipedService::processCipedControlPointSetLight(CipedControlPoint* data)
 {
   if(_Listener)
   {
@@ -187,7 +188,8 @@ void CipedService::processCipedControlPointSetLight(CipedControlPoint* data)
   }
   processCipedControlPointResponse(data);
 }
-void CipedService::processCipedControlPointSetAlarm(CipedControlPoint* data)
+
+void CipedTronic::CipedService::processCipedControlPointSetAlarm(CipedControlPoint* data)
 {
   if(_Listener)
   {
@@ -196,43 +198,49 @@ void CipedService::processCipedControlPointSetAlarm(CipedControlPoint* data)
   processCipedControlPointResponse(data);
 }
 
-void CipedService::processCipedControlPointResponse(CipedControlPoint* data)
+void CipedTronic::CipedService::processCipedControlPointResponse(CipedControlPoint* data)
 {
   _CipedControlPointCharacteristic.setValue((uint8_t*)data,sizeof(CipedControlPoint));  
   _CipedControlPointCharacteristic.indicate();
 }
 
-void CipedService::onWrite(BLECharacteristic *pCharacteristic)
+void CipedTronic::CipedService::onWrite(BLECharacteristic *pCharacteristic)
 {
   if(pCharacteristic->getUUID().equals(_CipedControlPointCharacteristic.getUUID()))
   {
       processCipedControlPoint(pCharacteristic->getData());
   }
 }
-void CipedService::onStatus(BLECharacteristic* pCharacteristic, Status s, uint32_t code)
-{
-}
-void CipedService::onRead(BLECharacteristic* pCharacteristic, esp_ble_gatts_cb_param_t* param)
-{
-}
-void CipedService::onNotify(BLECharacteristic* pCharacteristic)
+
+void CipedTronic::CipedService::onStatus(BLECharacteristic* pCharacteristic, Status s, uint32_t code)
 {
 }
 
-void CipedService::onRead(BLEDescriptor* pDescriptor)
-{
-}
-void CipedService::onWrite(BLEDescriptor* pDescriptor)
+void CipedTronic::CipedService::onRead(BLECharacteristic* pCharacteristic, esp_ble_gatts_cb_param_t* param)
 {
 }
 
- void CipedService::onConnect(BLEServer* pServer) {
-      _DeviceConnected = true;
-      Serial.println("connected");
-    };
+void CipedTronic::CipedService::onNotify(BLECharacteristic* pCharacteristic)
+{
+}
 
-    void CipedService::onDisconnect(BLEServer* pServer) {
-      _DeviceConnected = false;
-      Serial.println("disconnected");
-       BLEDevice::startAdvertising();
-    }
+void CipedTronic::CipedService::onRead(BLEDescriptor* pDescriptor)
+{
+}
+
+void CipedTronic::CipedService::onWrite(BLEDescriptor* pDescriptor)
+{
+}
+
+void CipedTronic::CipedService::onConnect(BLEServer* pServer) 
+{
+  _DeviceConnected = true;
+  Serial.println("connected");
+};
+
+void CipedTronic::CipedService::onDisconnect(BLEServer* pServer) 
+{
+  _DeviceConnected = false;
+  Serial.println("disconnected");
+   BLEDevice::startAdvertising();
+}

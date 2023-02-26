@@ -1,7 +1,8 @@
 #include <string>
 #include <BLEDevice.h>
 
-
+namespace CipedTronic
+{
 
 //b1fbda81-f607-42a1-827d-f84ae6bdf20a created UUID
 
@@ -66,6 +67,7 @@ class CipedService:public BLECharacteristicCallbacks,public BLEDescriptorCallbac
   uint32_t _LastTick500;
   uint32_t _LastTick250;
   CipedMeasurement _CipedMeasurement;
+  
   bool _DeviceConnected;
   uint32_t _State;
   bool _Toggle;
@@ -104,3 +106,5 @@ void onRead(BLEDescriptor* pDescriptor);
 void onWrite(BLEDescriptor* pDescriptor);
     
 };
+
+}//namespace CipedTronic

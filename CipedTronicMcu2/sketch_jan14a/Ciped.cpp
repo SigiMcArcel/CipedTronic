@@ -8,7 +8,7 @@ static void IRAM_ATTR isr() {
   
 }
 
-Ciped::Ciped()
+CipedTronic::Ciped::Ciped()
   :_LastPulses(0)
   ,_PulsesPerSecond(0)
   ,_PulsesPerSecondMax(0)
@@ -34,12 +34,12 @@ Ciped::Ciped()
  
 }
 
-Ciped::~Ciped ()
+CipedTronic::Ciped::~Ciped ()
 {
  
 }
 
-void Ciped::saveToEeprom()
+void CipedTronic::Ciped::saveToEeprom()
 {
     EEPROM.writeULong(0,_Pulses);
     EEPROM.commit();
@@ -49,7 +49,7 @@ void Ciped::saveToEeprom()
     EEPROM.commit();
 }
 
-void Ciped::loadFromEeprom()
+void CipedTronic::Ciped::loadFromEeprom()
 {
    uint32_t test = EEPROM.readULong(0);
    if(test == 0xFFFFFFFF)
@@ -64,7 +64,7 @@ void Ciped::loadFromEeprom()
 }
 
 //save pulses a 30 second  after the bike stand still or battery is low
- void Ciped::saveTiming()
+ void CipedTronic::Ciped::saveTiming()
  {
    
     switch(_SavingState)
@@ -109,7 +109,7 @@ void Ciped::loadFromEeprom()
     }
  }
 
-bool Ciped::checkBattery()
+bool CipedTronic::Ciped::checkBattery()
 {
   uint32_t Vbatt = 0;
   for(int i = 0; i < 16; i++) {
@@ -128,7 +128,7 @@ void Ciped::setPulsesPerRevolution(uint32_t pulsesPerRevolution)
   _PulsesPerRevolution = pulsesPerRevolution;
 }
 
-uint32_t Ciped::getPulses()
+uint32_t CipedTronic::Ciped::getPulses()
 {
    return _Pulses;
 }
@@ -149,7 +149,7 @@ uint32_t Ciped::getPulsesPerSecondAvg()
 }
 
 
-void  Ciped::activateAlarm(bool alarm)
+void  CipedTronic::Ciped::activateAlarm(bool alarm)
 {
   _AlarmActivated = alarm;
    if(_AlarmActivated)
@@ -162,12 +162,12 @@ void  Ciped::activateAlarm(bool alarm)
       _AlarmActivated = false;
     }
 }
-void Ciped::resetAlarm()
+void CipedTronic::Ciped::resetAlarm()
 {
    _Alarm = false;
 }
 
-void  Ciped::setLight(bool light)
+void  CipedTronic::Ciped::setLight(bool light)
 {
   if(light)
   {
@@ -180,12 +180,12 @@ void  Ciped::setLight(bool light)
   _LightOn = light;
 }
 
-uint32_t Ciped::getState()
+uint32_t CipedTronic::Ciped::getState()
 {
     return _State;
 }
 
-void Ciped::clear()
+void CipedTronic::Ciped::clear()
 {
   _Pulses = 0;
   _LastPulses = 0;
@@ -195,7 +195,7 @@ void Ciped::clear()
   saveToEeprom();
 }
 
-void Ciped::process()
+void CipedTronic::Ciped::process()
 {
   uint32_t tick = MSTimer::Instance()->getTick();
   uint32_t pulsesTmp = 0;
