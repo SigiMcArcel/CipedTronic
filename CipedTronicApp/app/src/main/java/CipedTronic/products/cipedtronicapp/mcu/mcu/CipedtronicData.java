@@ -12,7 +12,7 @@ public class CipedtronicData {
     public boolean StateError = false;
     public boolean StateLowBat = false;
     public boolean StateMove = false;
-    public boolean StateLight = false;
+    public boolean StateLoadEnable = false;
     public boolean StateAlarm = false;
     public boolean StateAlarmActive = false;
 }

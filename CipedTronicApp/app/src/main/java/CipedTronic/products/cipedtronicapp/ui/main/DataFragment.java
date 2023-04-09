@@ -2,7 +2,6 @@ package CipedTronic.products.cipedtronicapp.ui.main;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.hardware.lights.Light;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -39,7 +38,7 @@ public class DataFragment extends Fragment {
     private TextView textViewStates;
     private PageViewModel _VModel;
 
-    private boolean _Light = false;
+    private boolean _LoadEnable = false;
     private boolean _Alarm = false;
 
     public DataFragment() {
@@ -63,15 +62,15 @@ public class DataFragment extends Fragment {
             _Alarm = false;
             binding.buttonAlarm.setBackgroundColor(Color.GRAY);
         }
-        if(data.StateLight)
+        if(data.StateLoadEnable)
         {
-            _Light = true;
-            binding.buttonLight.setBackgroundColor(Color.GREEN);
+            _LoadEnable = true;
+            binding.buttonLoadEnable.setBackgroundColor(Color.GREEN);
         }
         else
         {
-            _Light = false;
-            binding.buttonLight.setBackgroundColor(Color.GRAY);
+            _LoadEnable = false;
+            binding.buttonLoadEnable.setBackgroundColor(Color.GRAY);
         }
     }
 
@@ -91,9 +90,9 @@ public class DataFragment extends Fragment {
         textViewDistance.setText(ss1);
 
         States += "Pulses = " + data.Pulses + "\r\nPulses per second = " + data.PulsesPerSecond + "\r\n";
-        if(data.StateLight)
+        if(data.StateLoadEnable)
         {
-            States += "Light On\r\n";
+            States += "Load Enabled\r\n";
         }
         if(data.StateError)
         {
@@ -126,14 +125,14 @@ public class DataFragment extends Fragment {
             col = Color.BLACK;
             binding.buttonAlarm.setEnabled(true);
             binding.buttonReset.setEnabled(true);
-            binding.buttonLight.setEnabled(true);
+            binding.buttonLoadEnable.setEnabled(true);
         }
         else
         {
             col = Color.RED;
             binding.buttonAlarm.setEnabled(false);
             binding.buttonReset.setEnabled(false);
-            binding.buttonLight.setEnabled(false);
+            binding.buttonLoadEnable.setEnabled(false);
         }
 
         textViewDistance.setTextColor(col);
@@ -171,16 +170,23 @@ public class DataFragment extends Fragment {
                 _VModel.resetMCU();
             }
         });
-        binding.buttonLight.setOnClickListener(new View.OnClickListener() {
+        binding.buttonLoadEnable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                _VModel.setLight(!_Light);
+                _VModel.setLight(!_LoadEnable);
             }
         });
         binding.buttonAlarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 _VModel.setAlarm(!_Alarm);
+            }
+        });
+
+        binding.buttonCalibrate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                _VModel.calibrate();
             }
         });
 

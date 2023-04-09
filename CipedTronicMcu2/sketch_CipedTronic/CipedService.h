@@ -1,5 +1,9 @@
+#ifndef CIPEDTRONIC_CIPEDSERVICE_H_
+#define CIPEDTRONIC_CIPEDSERVICE_H_
+
 #include <string>
 #include <BLEDevice.h>
+#include "Timer.h"
 
 namespace CipedTronic
 {
@@ -34,8 +38,9 @@ enum class CipedControlPointOpCodes_e:uint8_t
   Reserved = 0,
   SetPulsesPerRevolution,
   ResetCounter,  
-  SetLight,
+  SetLoadEnable,
   SetAlarm,
+  GetRadius,
 };
 
 
@@ -51,10 +56,10 @@ enum class CipedControlPointResultCodes_e:uint8_t
 class CipedServiceEvents
 {
   public:
-  virtual uint8_t ControlPointWritten(CipedControlPointOpCodes_e opCode,uint32_t parameter);
+  virtual uint8_t ControlPointWritten(CipedControlPointOpCodes_e opCode,CipedControlPoint* data);
 };
 
-class CipedService:public BLECharacteristicCallbacks,public BLEDescriptorCallbacks,public BLEServerCallbacks
+class CipedService:public BLECharacteristicCallbacks,public BLEDescriptorCallbacks,public BLEServerCallbacks,public TimerCallback 
 {
   private:
   BLECharacteristic _CipedMeasurementCharacteristic;
@@ -63,7 +68,9 @@ class CipedService:public BLECharacteristicCallbacks,public BLEDescriptorCallbac
   BLEService *_Service;
   CipedServiceEvents* _Listener;
 
-  uint32_t _LastTick;
+  Timer _Timer1000ms;
+  Timer _Timer500ms;
+  Timer _Timer250ms;
   uint32_t _LastTick500;
   uint32_t _LastTick250;
   CipedMeasurement _CipedMeasurement;
@@ -72,12 +79,17 @@ class CipedService:public BLECharacteristicCallbacks,public BLEDescriptorCallbac
   uint32_t _State;
   bool _Toggle;
 
-  
+  void Timer1000Elapsed();
+  void Timer500Elapsed();
+  void Timer250Elapsed();
+  void toggleIndicatorLed();
+
   void processCipedControlPoint(uint8_t* data);
   void processCipedControlPointSetPulsesPerRevolution(CipedControlPoint* data);
   void processCipedControlResetCounter(CipedControlPoint* data);
-  void processCipedControlPointSetLight(CipedControlPoint* data);
+  void processCipedControlPointSetLoadEnable(CipedControlPoint* data);
   void processCipedControlPointSetAlarm(CipedControlPoint* data);
+  void processCipedControlPointGetRadius(CipedControlPoint* data);
   void processCipedControlPointResponse(CipedControlPoint* data);
 
   void sendCipedMeasurementCharacteristicValue(CipedMeasurement* cipedMeasurement);
@@ -104,7 +116,11 @@ void onNotify(BLECharacteristic* pCharacteristic);
 
 void onRead(BLEDescriptor* pDescriptor);
 void onWrite(BLEDescriptor* pDescriptor);
+
+void TimerElapsed(int32_t id);
     
 };
 
 }//namespace CipedTronic
+
+#endif //CIPEDTRONIC_CIPEDSERVICE_H_

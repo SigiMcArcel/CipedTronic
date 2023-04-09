@@ -142,12 +142,17 @@ public class PageViewModel extends AndroidViewModel {
 
     void setLight(boolean on)
     {
-        _CipedTronicMCU.setLight(on);
+        _CipedTronicMCU.setLoadEnable(on);
     }
     void setAlarm(boolean on)
     {
         _CipedTronicMCU.setAlarm(on);
     }
+    void calibrate()
+    {
+        _CipedTronicMCU.getRadius();
+    }
+
     public  void initializeMCU(String address)
     {
         int pulsesPerRevolution =  Integer.parseInt(_Prefs.getString("pulse_per_revolution","1"));;
@@ -156,7 +161,6 @@ public class PageViewModel extends AndroidViewModel {
         _CipedTronicMCU.setOnCipedTronicDeviceListener(_OnCipedTronicDeviceListener);
         _CipedTronicMCU.setPulsesPerRevolution(pulsesPerRevolution);
         _CipedTronicMCU.setWheelRadius(wheelradius);
-
     }
 
     public void disconnectDevice()

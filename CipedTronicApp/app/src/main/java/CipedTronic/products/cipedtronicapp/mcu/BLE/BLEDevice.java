@@ -156,6 +156,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
         void onError(BLEDeviceErrors error);
     }
 
+
     /**
      *
      */
@@ -238,7 +239,17 @@ public class BLEDevice extends Thread implements AutoCloseable{
         UnkownCommand
     }
 
+    public enum NotificationType
+    {
+        Notification,
+        Indication
+    }
 
+    private class NotificationParameter
+    {
+        public UUID Uuid;
+        public NotificationType Type;
+    }
 
     public static final UUID CCCD = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     public static final int _RESTARTTIMEOUT = 5000;
@@ -272,7 +283,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
     BLETimeOut _ConnectTimeout = new BLETimeOut();
 
     private OnBLEDeviceListener _Listener;
-    private List<UUID> _NotificationCharacteristics = new ArrayList<>();
+    private List<NotificationParameter> _NotificationCharacteristics = new ArrayList<>();
     private int _NotificationListCounter = 0;
     private UUID _ServiceUIID = null;
     private BluetoothGattService _Service = null;
@@ -304,9 +315,22 @@ public class BLEDevice extends Thread implements AutoCloseable{
         return _State.name();
     }
 
-    public void addNotifiationCharacteristic(UUID characteristic)
+    public void addNotificationCharacteristic(UUID characteristic)
     {
-        _NotificationCharacteristics.add(characteristic);
+        NotificationParameter param = new NotificationParameter();
+        param.Uuid = characteristic;
+        param.Type = NotificationType.Notification;
+
+        _NotificationCharacteristics.add(param);
+    }
+
+    public void addIndicateNotificationCharacteristic(UUID characteristic)
+    {
+        NotificationParameter param = new NotificationParameter();
+        param.Uuid = characteristic;
+        param.Type = NotificationType.Indication;
+
+        _NotificationCharacteristics.add(param);
     }
 
     /**
@@ -645,16 +669,26 @@ public class BLEDevice extends Thread implements AutoCloseable{
             return BLEDeviceErrors.Ok;
 
     }
-    private BLEDeviceErrors enableNotification(UUID characteristicUUID)
+    private BLEDeviceErrors enableNotification(NotificationParameter param)
     {
         BLEDeviceErrors result = BLEDeviceErrors.Ok;
-        Log.e("BLEDevice", "enableNotification : " + characteristicUUID.toString());
-        result = setNotificationEvent(characteristicUUID);
+        Log.e("BLEDevice", "enableNotification : " + param.Uuid.toString());
+        result = setNotificationEvent(param.Uuid);
         if(result != BLEDeviceErrors.Ok)
         {
             return result;
         }
-        if(writeDesc(characteristicUUID,CCCD,BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE) != BLEDeviceErrors.Ok){
+        if(param.Type == NotificationType.Notification) {
+            if (writeDesc(param.Uuid, CCCD, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE) != BLEDeviceErrors.Ok) {
+                return BLEDeviceErrors.CouldNotEnableNotification;
+            }
+        }else if(param.Type == NotificationType.Indication) {
+            if (writeDesc(param.Uuid, CCCD, BluetoothGattDescriptor.ENABLE_INDICATION_VALUE) != BLEDeviceErrors.Ok) {
+                return BLEDeviceErrors.CouldNotEnableNotification;
+            }
+        }
+        else
+        {
             return BLEDeviceErrors.CouldNotEnableNotification;
         }
         return BLEDeviceErrors.Ok;
@@ -668,7 +702,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
             _NotificationListCounter = 0;
             return BLEDeviceErrors.Ok;
         }
-        UUID ch = _NotificationCharacteristics.get(_NotificationListCounter);
+        NotificationParameter ch = _NotificationCharacteristics.get(_NotificationListCounter);
         _NotificationListCounter++;
         result = enableNotification(ch);
         if(result == BLEDeviceErrors.Ok)

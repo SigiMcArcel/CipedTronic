@@ -67,7 +67,7 @@ public class CipedTronicMCU extends  BLEDevice{
     private long    _PulsesPerSecondAverage = 0;
     private long    _BatteryVoltageMillvolt = 0;
     private long    _CipedState;
-    private boolean _LightOn = false;
+    private boolean _LoadEnable = false;
     private boolean _AlarmOn = false;
     //Bluetooth
     public static final UUID CIPED_SERVICE_UUID = UUID.fromString("b1fb1816-f607-42a1-827d-f84ae6bdf20a");
@@ -76,7 +76,8 @@ public class CipedTronicMCU extends  BLEDevice{
 
     public CipedTronicMCU() {
         super();
-        addNotifiationCharacteristic(CIPED_MEASUREMENT_CHARACTER_UUID);
+        addNotificationCharacteristic(CIPED_MEASUREMENT_CHARACTER_UUID);
+        addIndicateNotificationCharacteristic(CIPED_CONTROL_POINT_CHARACTER_UUID);
         setOnBLEDeviceListener(_OnBLEDeviceListener);
     }
 
@@ -112,7 +113,7 @@ public class CipedTronicMCU extends  BLEDevice{
 
     public void decodeCipedState(long state )
     {
-        mcuData.StateLight = false;
+        mcuData.StateLoadEnable = false;
         mcuData.StateAlarm = false;
         mcuData.StateMove = false;
         mcuData.StateLowBat = false;
@@ -120,11 +121,11 @@ public class CipedTronicMCU extends  BLEDevice{
         mcuData.StateError = false;
         mcuData.StateAlarmActive = false;
 
-        _LightOn = false;
+        _LoadEnable = false;
         _AlarmOn = false;
         if((state & CipedStateLightOn) > 0){
-            mcuData.StateLight = true;
-            _LightOn = true;
+            mcuData.StateLoadEnable = true;
+            _LoadEnable = true;
         }
         if((state & CipedStateAlarmActive) >0){
             mcuData.StateAlarm = true;
@@ -179,7 +180,7 @@ public class CipedTronicMCU extends  BLEDevice{
     {
         _PulsesPerRevolution = p;
     }
-    public boolean getLight(){return _LightOn;}
+    public boolean getLoadEnable(){return _LoadEnable;}
     public boolean getAlarm(){return  _AlarmOn;}
     public CipedtronicData getData()
     {
@@ -187,11 +188,14 @@ public class CipedTronicMCU extends  BLEDevice{
     }
 
 
-    public void setLight(boolean on){
-        _CipedTronicControlPoint.SetLight(on);
+    public void setLoadEnable(boolean on){
+        _CipedTronicControlPoint.SetLoadEnable(on);
     }
     public void setAlarm(boolean on) {
         _CipedTronicControlPoint.SetAlarm(on);
+    }
+    public void getRadius() {
+        _CipedTronicControlPoint.GetRadius();
     }
 
 
