@@ -2,76 +2,124 @@
 #define CIPEDTRONIC_CIPED_H_
 #include <string>
 #include "Timer.h"
-#include "Adafruit_VL53L0X.h"
+#include "CipedService.h"
+#include "PowerManagement.h"
+#include <Preferences.h>
 
 namespace CipedTronic
 {
+  //to do: mask or bit number for all 
 	enum class CipedStates_e:uint32_t
 	{
-	  None = 0x00000000,
-	  Running = 0x00000001,
-	  Error = 0x00000002,  
-	  LowBat = 0x00000004,
-	  Move = 0x00000008,
-	  LoadEnabled = 0x000000010,
-	  AlarmEnabled = 0x000000020,
-	  AlarmActive = 0x000000040  
+	  None,
+	  Running,
+	  Error,  
+	  LowBat,
+	  Move,
+	  LoadEnabled,
+	  Loading,
+	  AlarmEnabled,
+	  AlarmActive,
+    PowerSaveEnabled,
 	};
+
+  enum class CipedFlags_e:uint32_t
+	{
+	  None,
+	  EnableLoad,  
+	  PowerSave
+	};
+
+typedef struct  CipedData_t
+{
+    uint32_t _Pulses;
+    uint32_t _TotalPulses;
+    uint32_t _PulsesPerSecondMax;
+    uint32_t _TimeWasMoving;
+    uint32_t _Flags;
+} CipedData;
+
+class CipedEvents
+{
+  public:
+  virtual void BevorSaveData();
+};
 
 	class Ciped : public TimerCallback
 	{
 	  private:
-	  uint32_t _PulsesPerRevolution;
+    uint32_t _TotalPulses;
 	  uint32_t _LastPulses;
 	  uint32_t _PulsesPerSecond;
 	  uint32_t _LastPulsesPerSecond;
 	  uint32_t _PulsesPerSecondMax;
-	  uint32_t _PulsesPerSecondAvg;
-	  uint32_t _LastTick;
-
-      //Control
-      bool _AlarmEnable;
+    uint32_t _TimeWasMoving;
+  
+    //Control
+    bool _AlarmEnable;
 	  bool _LoadEnable;
-    
-      //States
+    bool _PowerSave;
+  
+    //States
+    bool _Running;
+    bool _Error;
+    bool _LowBattery;
 	  bool _Move;
-	  bool _Alarm;
-	  bool _Loading;
-	  bool _LowBattery;
+    bool _Loading;
+	  bool _AlarmEnabled;
+    bool _AlarmActiv;
+    bool _LoadEnabled;
+	  bool _OperatingSpeedReached;
+    bool _PowerSaveEnabled;
+    
+
 	  
-      //data
-      uint32_t _State;
+    //data
+    uint32_t _State;
+    uint32_t _Flags;
+    CipedBikeData _CipedBikeData;
+    CipedInfo _CipedInfo;
+    
+    //intern    
+    Timer _ProcessTimer;
+    PowerManagement _PowerManagement;
+    int _SavingState;
+    bool _FirstCycle;
+    Preferences _Preferences; 
+  
 
-      //intern    
-      Timer _ProcessTimer;
-      Adafruit_VL53L0X _Lox;
-      int _SavingState;
-     
-      const uint32_t _VelocityForLoad = 60; 
+    
+    //const
+    const uint32_t _OperatingSpeedVelocity = 10; 
+   
 
+      //functions
 	  void saveTiming();
 	  void saveToEeprom();
 	  void loadFromEeprom();
 	  bool checkBattery();
 	  bool getBatteryState();
+    void calculateBikeData();    
+    bool getBitOf(uint32_t bit,uint32_t value);
+    uint32_t setBitOf(uint32_t bit,uint32_t value,bool set);
+    void decodeFlags();
+    void encodeStates();
 	public:
 	  Ciped();
 	  ~Ciped(); 
 
-	  void setPulsesPerRevolution(uint32_t pulsesPerRevolution);
-	  uint32_t getPulses();
-	  uint32_t getPulsesPerSecond();
-	  uint32_t getPulsesPerSecondMax();
-	  uint32_t getPulsesPerSecondAvg();
-	  uint32_t getState();
-      uint16_t getRadius();
+    void begin();
+    void setFlags(uint32_t flags);
+    uint32_t getFlags();
+    void getCipedBikeData(CipedBikeData* data);    
+    void getCipedBikeInfo(CipedInfo* data);
+   
 
 	  void clear();
-	  void activateAlarm(bool alarm);
-	  void resetAlarm();
-	  void setLoadEnable(bool enable);	 
+    void enableAlarm(bool set);
 
 	  void process();
+    void TimerMain();
 
     //Implements
     void TimerElapsed(int32_t id);

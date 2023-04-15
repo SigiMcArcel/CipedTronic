@@ -13,34 +13,43 @@ namespace CipedTronic
 #define CIPED_SERVICE_UUID  "b1fb1816-f607-42a1-827d-f84ae6bdf20a"  //2000 Ciped 
 #define CSC_CLIENT_CONF_DESC_UUID "b1fb2902-f607-42a1-827d-f84ae6bdf20a" //Client Characteristic Configuration  2902
 //CSC Measurement
-#define CIPED_MEASUREMENT_CHARACTER_UUID "b1fb0001-f607-42a1-827d-f84ae6bdf20a"  // 0001
+#define CIPED_BIKEDATA_CHARACTER_UUID "b1fb0001-f607-42a1-827d-f84ae6bdf20a"  // 0001
 //SC Control Point
-#define CIPED_CONTROL_POINT_CHARACTER_UUID "b1fb0002-f607-42a1-827d-f84ae6bdf20a"  //0001
+#define CIPED_CONTROL_POINT_CHARACTER_UUID "b1fb0002-f607-42a1-827d-f84ae6bdf20a"  //0002
+//SC Control Point
+#define CIPED_INFO_CHARACTER_UUID "b1fb0003-f607-42a1-827d-f84ae6bdf20a"  //0003
 
 
-typedef struct CipedMeasurement_t
+typedef struct __attribute__((packed, aligned(1))) CipedBikeData_t
 {
   uint32_t Pulses;
   uint32_t PulsesPerSecond;
   uint32_t PulsesPerSecondMax;
-  uint32_t PulsesPerSecondAvg;
+  uint32_t TimeMoving;
   uint32_t State;
-}CipedMeasurement;
+}CipedBikeData ;
 
-typedef struct CipedControlPoint_t
+typedef struct __attribute__((packed, aligned(1))) CipedInfo_t
 {
+  float VBatt;
+}CipedInfo ;
+
+typedef struct __attribute__((packed, aligned(1))) CipedControlPoint_t
+{
+  uint8_t OpRequestCode;
   uint8_t OpResultCode;
   uint32_t Parameter;
-}CipedControlPoint;
+}CipedControlPoint ;
 
 enum class CipedControlPointOpCodes_e:uint8_t
 {
-  Reserved = 0,
-  SetPulsesPerRevolution,
-  ResetCounter,  
-  SetLoadEnable,
-  SetAlarm,
-  GetRadius,
+  Reserved,
+  SetFlags,
+  GetFlags,
+  ResetCounter,
+  ResetAlarm,
+  AlarmEnable,
+  Max
 };
 
 
@@ -62,8 +71,9 @@ class CipedServiceEvents
 class CipedService:public BLECharacteristicCallbacks,public BLEDescriptorCallbacks,public BLEServerCallbacks,public TimerCallback 
 {
   private:
-  BLECharacteristic _CipedMeasurementCharacteristic;
+  BLECharacteristic _CipedBikeDataCharacteristic;
   BLECharacteristic _CipedControlPointCharacteristic;
+  BLECharacteristic _CipedInfoCharacteristic;
   BLEServer *_Server;
   BLEService *_Service;
   CipedServiceEvents* _Listener;
@@ -73,11 +83,15 @@ class CipedService:public BLECharacteristicCallbacks,public BLEDescriptorCallbac
   Timer _Timer250ms;
   uint32_t _LastTick500;
   uint32_t _LastTick250;
-  CipedMeasurement _CipedMeasurement;
+  
+  CipedBikeData _CipedBikeData;
+  CipedInfo _CipedInfo;
   
   bool _DeviceConnected;
   uint32_t _State;
   bool _Toggle;
+  uint32_t _NotifyScheduler;
+ 
 
   void Timer1000Elapsed();
   void Timer500Elapsed();
@@ -85,14 +99,10 @@ class CipedService:public BLECharacteristicCallbacks,public BLEDescriptorCallbac
   void toggleIndicatorLed();
 
   void processCipedControlPoint(uint8_t* data);
-  void processCipedControlPointSetPulsesPerRevolution(CipedControlPoint* data);
-  void processCipedControlResetCounter(CipedControlPoint* data);
-  void processCipedControlPointSetLoadEnable(CipedControlPoint* data);
-  void processCipedControlPointSetAlarm(CipedControlPoint* data);
-  void processCipedControlPointGetRadius(CipedControlPoint* data);
   void processCipedControlPointResponse(CipedControlPoint* data);
 
-  void sendCipedMeasurementCharacteristicValue(CipedMeasurement* cipedMeasurement);
+  void sendCipedBikeDataCharacteristicValue(CipedBikeData* cipedBikeData);
+  void sendCipedInfoCharacteristicValue(CipedInfo* Info);
 
 public:
   CipedService( BLEServer *pServer,CipedServiceEvents* listener);
@@ -101,7 +111,8 @@ public:
   void stop();
   void process();
 
-  void setCipedData(CipedMeasurement* cipedMeasurement);
+  void setCipedData(CipedBikeData* cipedBikeData);
+  void setCipedInfo(CipedInfo*info);
   
 
 //Implements

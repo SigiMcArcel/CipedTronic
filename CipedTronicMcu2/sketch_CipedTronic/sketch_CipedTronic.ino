@@ -6,11 +6,13 @@
 
 using namespace CipedTronic;
 BLEServer* _Server;
-Ciped* _Ciped = NULL;
+Ciped* _Ciped =  NULL;
 CipedService* _CipedService = NULL;
+uint32_t _LastState = 0;
 
 
-class CipedEvents: public CipedTronic::CipedServiceEvents
+
+class CipedControlPointEvents: public CipedTronic::CipedServiceEvents
 {
 public:
   uint8_t ControlPointWritten(CipedTronic::CipedControlPointOpCodes_e opCode,CipedControlPoint* data)
@@ -19,49 +21,41 @@ public:
     {
       return (uint8_t)CipedTronic::CipedControlPointResultCodes_e::OperationFailed;
     }
-    Serial.printf("ControlPointWritten %d\r\n",opCode);
+    
     switch(opCode)
     {
-      case CipedTronic::CipedControlPointOpCodes_e::SetAlarm:
+      
+      case CipedTronic::CipedControlPointOpCodes_e::SetFlags:
       {
-        Serial.printf("SetAlarm %d\r\n", data->Parameter);
-        if(data->Parameter > 0)
-        {
-          _Ciped->activateAlarm(true);
-        }
-        else
-        {
-           _Ciped->activateAlarm(false);
-        }
+        Serial.printf("SetFlags 0x%x\r\n",data->Parameter);
+        _Ciped->setFlags(data->Parameter);
         
         return (uint8_t)CipedTronic::CipedControlPointResultCodes_e::Success;
       } 
-      case CipedTronic::CipedControlPointOpCodes_e::SetLoadEnable:
+
+       case CipedTronic::CipedControlPointOpCodes_e::GetFlags:
       {
-         Serial.printf("Setlight %d\r\n",data->Parameter);
-        if(data->Parameter > 0)
-        {
-          _Ciped->setLoadEnable(true);
-        }
-        else
-        {
-           _Ciped->setLoadEnable(false);
-        }
+  
+        data->Parameter = _Ciped->getFlags();
+        Serial.printf("GetFlags 0x%x\r\n",data->Parameter);
         return (uint8_t)CipedTronic::CipedControlPointResultCodes_e::Success;
-      }      
-       case CipedTronic::CipedControlPointOpCodes_e::ResetCounter:
+      } 
+
+      case CipedTronic::CipedControlPointOpCodes_e::ResetCounter:
       {
-         Serial.printf("reset %d\r\n",data->Parameter);
+         Serial.printf("ResetCounter 0x%x\r\n",data->Parameter);
         _Ciped->clear();
        return (uint8_t)CipedTronic::CipedControlPointResultCodes_e::Success;
       } 
-       case CipedTronic::CipedControlPointOpCodes_e::GetRadius:
+      
+      case CipedTronic::CipedControlPointOpCodes_e::AlarmEnable:
       {
-         data->Parameter = (uint32_t)_Ciped->getRadius();
-         Serial.printf("GetRadius %d\r\n",data->Parameter);
-        return (uint8_t)CipedTronic::CipedControlPointResultCodes_e::Success;
+         Serial.printf("AlarmEnable 0x%x\r\n",data->Parameter);
+        _Ciped->enableAlarm((bool)data->Parameter);
+       return (uint8_t)CipedTronic::CipedControlPointResultCodes_e::Success;
       } 
     }
+    
   }
 };
 
@@ -75,22 +69,22 @@ void setup() {
   if(_Server != NULL)
   {
     _Ciped = new Ciped();
-    _CipedService = new CipedService(_Server,new CipedEvents());
+    _Ciped->begin();
+    _CipedService = new CipedService(_Server,new CipedControlPointEvents());
     _CipedService->start();
-    
   }  
 
 }
  
 void loop() {
-  CipedMeasurement measure = {0};
-  
+  CipedBikeData data = {0};
+  CipedInfo info = {0};
+  uint32_t state = 0;  
   _Ciped->process();
-  measure.Pulses = _Ciped->getPulses();
-  measure.PulsesPerSecond = _Ciped->getPulsesPerSecond();
-  measure.PulsesPerSecondMax = _Ciped->getPulsesPerSecondMax();
-  measure.PulsesPerSecondAvg = _Ciped->getPulsesPerSecondAvg();
-  measure.State = _Ciped->getState();
-  _CipedService->setCipedData(&measure);
+  _Ciped->getCipedBikeData(&data);
+  _Ciped->getCipedBikeInfo(&info);
+  
+  _CipedService->setCipedData(&data);
+  _CipedService->setCipedInfo(&info);
   _CipedService->process();
 }

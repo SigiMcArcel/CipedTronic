@@ -7,17 +7,20 @@
 
 
 CipedTronic::CipedService::CipedService(BLEServer *pServer,CipedServiceEvents* listener)
-:_CipedMeasurementCharacteristic(CIPED_MEASUREMENT_CHARACTER_UUID,BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ)
+:_CipedBikeDataCharacteristic(CIPED_BIKEDATA_CHARACTER_UUID,BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ)
 ,_CipedControlPointCharacteristic(CIPED_CONTROL_POINT_CHARACTER_UUID,BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_INDICATE)
+,_CipedInfoCharacteristic(CIPED_INFO_CHARACTER_UUID,BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ)
 ,_Server(pServer)
 ,_Service(NULL)
 ,_Listener(listener)
-,_Timer1000ms(1000,1000,this)
+,_Timer1000ms(500,1000,this)
 ,_Timer500ms(500,500,this)
-,_Timer250ms(250,250,this)
-,_CipedMeasurement()
+,_Timer250ms(100,250,this)
+,_CipedBikeData()
+,_CipedInfo()
 ,_DeviceConnected(false)
 ,_Toggle(false)
+,_NotifyScheduler(0)
 {
    if(_Server != NULL)
    {
@@ -27,13 +30,16 @@ CipedTronic::CipedService::CipedService(BLEServer *pServer,CipedServiceEvents* l
       if(_Service != NULL)
       {
         Serial.println("Service created");
-        _CipedMeasurementCharacteristic.addDescriptor(new BLE2902());
+        _CipedBikeDataCharacteristic.addDescriptor(new BLE2902());
         _CipedControlPointCharacteristic.addDescriptor(new BLE2902());
-        _Service->addCharacteristic(&_CipedMeasurementCharacteristic);
+        _CipedInfoCharacteristic.addDescriptor(new BLE2902());
+        _Service->addCharacteristic(&_CipedBikeDataCharacteristic);
         _Service->addCharacteristic(&_CipedControlPointCharacteristic);
+        _Service->addCharacteristic(&_CipedInfoCharacteristic);
         
-        _CipedMeasurementCharacteristic.setCallbacks(this);    
-        _CipedControlPointCharacteristic.setCallbacks(this);    
+        _CipedBikeDataCharacteristic.setCallbacks(this);    
+        _CipedControlPointCharacteristic.setCallbacks(this);   
+        _CipedInfoCharacteristic.setCallbacks(this); 
          BLEDevice::startAdvertising();    
       }
    }
@@ -91,7 +97,31 @@ void CipedTronic::CipedService::toggleIndicatorLed()
 
 void CipedTronic::CipedService::Timer1000Elapsed()
 {
-    sendCipedMeasurementCharacteristicValue(&_CipedMeasurement);    
+  if(!_DeviceConnected)
+  {
+    return;    
+  }
+  switch(_NotifyScheduler)
+  {
+    case 0:
+    {
+      sendCipedBikeDataCharacteristicValue(&_CipedBikeData);  
+      _NotifyScheduler++;
+      break;
+    }
+    case 1:
+    {
+      sendCipedInfoCharacteristicValue(&_CipedInfo);
+      _NotifyScheduler++;      
+      break;
+    }
+    default:
+    {
+        _NotifyScheduler = 0;
+    }
+  }
+   
+	
 }
 
 void CipedTronic::CipedService::Timer500Elapsed()
@@ -110,115 +140,53 @@ void CipedTronic::CipedService::Timer250Elapsed()
   }
 }
 
-
-
-
-void CipedTronic::CipedService::setCipedData(CipedMeasurement* cipedMeasurement)
+void CipedTronic::CipedService::setCipedData(CipedBikeData* cipedBikeData)
 {
-    memcpy(&_CipedMeasurement,cipedMeasurement,sizeof(CipedMeasurement));
+    memcpy(&_CipedBikeData,cipedBikeData,sizeof(CipedBikeData));
 }
 
-void CipedTronic::CipedService::sendCipedMeasurementCharacteristicValue(CipedMeasurement* cipedMeasurement)
+void CipedTronic::CipedService::setCipedInfo(CipedInfo* info)
 {
-  if(!_DeviceConnected)
-  {
-    return;    
-  }
-   //Serial.printf("send %d %d %d %d 0x%x \r\n",cipedMeasurement->Pulses,cipedMeasurement->PulsesPerSecond,cipedMeasurement->PulsesPerSecondMax,cipedMeasurement->PulsesPerSecondAvg,cipedMeasurement->State);
-  _CipedMeasurementCharacteristic.setValue((uint8_t*)cipedMeasurement,sizeof(CipedMeasurement));  
-  _CipedMeasurementCharacteristic.notify();
+    memcpy(&_CipedInfo,info,sizeof(CipedInfo));
+}
+
+void CipedTronic::CipedService::sendCipedBikeDataCharacteristicValue(CipedBikeData* cipedBikeData)
+{
+ //  Serial.printf("send Bike data %f %f %f %d %d \r\n",cipedBikeData->Distance,cipedBikeData->Velocity,cipedBikeData->VelocityMax,cipedBikeData->Radius,cipedBikeData->TimeMoving);
+  _CipedBikeDataCharacteristic.setValue((uint8_t*)cipedBikeData,sizeof(CipedBikeData));  
+  _CipedBikeDataCharacteristic.notify();
+}
+
+void CipedTronic::CipedService::sendCipedInfoCharacteristicValue(CipedInfo* info)
+{
+  // Serial.printf("send info %d %d %d \r\n",info->Pulses,info->PulsesPerSecond,info->Radius);
+  _CipedInfoCharacteristic.setValue((uint8_t*)info,sizeof(CipedInfo));  
+  _CipedInfoCharacteristic.notify();
 }
 
 void CipedTronic::CipedService::processCipedControlPoint(uint8_t* data)
 {
   CipedControlPoint* cipedControlPointData = (CipedControlPoint*)data;
+  
   if(cipedControlPointData == NULL)
   {
     return;    
   }
-  switch(static_cast<int>(cipedControlPointData->OpResultCode))
+  if((CipedControlPointOpCodes_e)cipedControlPointData->OpRequestCode >= CipedControlPointOpCodes_e::Max)
   {
-    case static_cast<int>(CipedControlPointOpCodes_e::SetPulsesPerRevolution):
-    {
-      processCipedControlPointSetPulsesPerRevolution(cipedControlPointData);
-      break;
-    } 
-    case static_cast<int>(CipedControlPointOpCodes_e::ResetCounter):
-    {
-      processCipedControlResetCounter(cipedControlPointData);
-      break;
-    } 
-    case static_cast<int>(CipedControlPointOpCodes_e::SetLoadEnable):
-    {
-      processCipedControlPointSetLoadEnable(cipedControlPointData);
-      break;
-    } 
-    case static_cast<int>(CipedControlPointOpCodes_e::SetAlarm):
-    {
-      processCipedControlPointSetAlarm(cipedControlPointData);
-      break;
-    } 
-     case static_cast<int>(CipedControlPointOpCodes_e::GetRadius):
-    {
-      processCipedControlPointGetRadius(cipedControlPointData);
-      break;
-    } 
-    default:
-    {
-      cipedControlPointData->OpResultCode = static_cast<uint8_t>(CipedControlPointResultCodes_e::NotSupported);
-      cipedControlPointData->Parameter = 0;
-      processCipedControlPointResponse(cipedControlPointData);
-      break;
-    }           
+    cipedControlPointData->OpResultCode = static_cast<uint8_t>(CipedControlPointResultCodes_e::NotSupported);
+    cipedControlPointData->Parameter = 0;
+    processCipedControlPointResponse(cipedControlPointData);
+    return;
   }
-}
-
-
-void CipedTronic::CipedService::processCipedControlPointSetPulsesPerRevolution(CipedControlPoint* data)
-{
   if(_Listener)
   {
-    data->OpResultCode = _Listener->ControlPointWritten((CipedControlPointOpCodes_e)data->OpResultCode, data);
+    cipedControlPointData->OpResultCode = _Listener->ControlPointWritten((CipedControlPointOpCodes_e)cipedControlPointData->OpRequestCode, cipedControlPointData);
   }
-  processCipedControlPointResponse(data);
-}
-
-void CipedTronic::CipedService::processCipedControlResetCounter(CipedControlPoint* data)
-{
-  if(_Listener)
-  {
-    data->OpResultCode = _Listener->ControlPointWritten((CipedControlPointOpCodes_e)data->OpResultCode, data);
-  }
-  processCipedControlPointResponse(data);
+  processCipedControlPointResponse(cipedControlPointData);
 }
 
 
-void CipedTronic::CipedService::processCipedControlPointSetAlarm(CipedControlPoint* data)
-{
-  if(_Listener)
-  {
-    data->OpResultCode = _Listener->ControlPointWritten((CipedControlPointOpCodes_e )data->OpResultCode, data);
-  }
-  processCipedControlPointResponse(data);
-}
-
-void CipedTronic::CipedService::processCipedControlPointSetLoadEnable(CipedControlPoint* data)
-{
-  if(_Listener)
-  {
-    data->OpResultCode = _Listener->ControlPointWritten((CipedControlPointOpCodes_e )data->OpResultCode, data);
-  }
-  processCipedControlPointResponse(data);
-}
-
-void CipedTronic::CipedService::processCipedControlPointGetRadius(CipedControlPoint* data)
-{
-  if(_Listener)
-  {
-    data->OpResultCode = _Listener->ControlPointWritten((CipedControlPointOpCodes_e )data->OpResultCode, data);
-  }
-  processCipedControlPointResponse(data);
-}
 void CipedTronic::CipedService::processCipedControlPointResponse(CipedControlPoint* data)
 {
   _CipedControlPointCharacteristic.setValue((uint8_t*)data,sizeof(CipedControlPoint));  
@@ -226,7 +194,7 @@ void CipedTronic::CipedService::processCipedControlPointResponse(CipedControlPoi
 }
 
 
-//implemts
+//implements
 
 void CipedTronic::CipedService::TimerElapsed(int32_t id)
 {
@@ -254,7 +222,8 @@ void CipedTronic::CipedService::onWrite(BLECharacteristic *pCharacteristic)
 {
   if(pCharacteristic->getUUID().equals(_CipedControlPointCharacteristic.getUUID()))
   {
-      processCipedControlPoint(pCharacteristic->getData());
+    
+    processCipedControlPoint(pCharacteristic->getData());
   }
 }
 
@@ -281,7 +250,7 @@ void CipedTronic::CipedService::onWrite(BLEDescriptor* pDescriptor)
 void CipedTronic::CipedService::onConnect(BLEServer* pServer) 
 {
   _DeviceConnected = true;
-  Serial.println("connected");
+  Serial.printf("connected\r\n");
 };
 
 void CipedTronic::CipedService::onDisconnect(BLEServer* pServer) 

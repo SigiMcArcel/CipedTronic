@@ -21,6 +21,8 @@ namespace CipedTronic
 	  TimerCore(const TimerCore& obj) = delete;
 	  static TimerCore* Instance();
 	  uint32_t getTick();
+    void start();
+    void stop();
 	};
 }
 #endif //CIPEDTRONIC_TIMERCORE_H_

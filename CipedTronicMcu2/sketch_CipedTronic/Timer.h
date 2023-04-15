@@ -25,6 +25,8 @@ namespace CipedTronic
 	  Timer(int32_t interval,int32_t id, TimerCallback* callback);
 	  void start();
 	  void stop();
+    void startAll();
+    void stopAll();
     bool timeOut(int32_t timeOutValue);
     bool timeOutReset();
 	  void process();

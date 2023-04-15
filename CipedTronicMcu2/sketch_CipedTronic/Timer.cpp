@@ -8,7 +8,7 @@ CipedTronic::Timer::Timer(int32_t interval,int32_t id, TimerCallback* callback)
 ,_LastTick(0)
 ,_TimeoutStartValue(0)
 {
-	
+	TimerCore::Instance()->start();
 }
 
 void CipedTronic::Timer::start()
@@ -21,6 +21,15 @@ void CipedTronic::Timer::stop()
 	_Start = false;
 }
 	  
+ void CipedTronic::Timer::startAll()
+ {
+    TimerCore::Instance()->start();
+ }
+  void CipedTronic::Timer::stopAll()
+  {
+    TimerCore::Instance()->stop();
+  }
+
 bool CipedTronic::Timer::timeOut(int32_t timeOutValue)
 {
   if(_TimeoutStartValue == 0)
@@ -29,7 +38,7 @@ bool CipedTronic::Timer::timeOut(int32_t timeOutValue)
   }  
   else
   {
-      if(timeOutValue > (TimerCore::Instance()->getTick() - _TimeoutStartValue))
+      if((TimerCore::Instance()->getTick() - _TimeoutStartValue) > timeOutValue)
       {
          _TimeoutStartValue = 0;
           return true;

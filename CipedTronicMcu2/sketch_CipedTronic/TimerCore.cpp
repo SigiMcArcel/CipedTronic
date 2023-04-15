@@ -1,3 +1,4 @@
+#include "esp32-hal-timer.h"
 #include "TimerCore.h"
 
 CipedTronic::TimerCore* CipedTronic::TimerCore::_Instance = NULL;
@@ -17,7 +18,7 @@ CipedTronic::TimerCore::TimerCore()
   _Timer = timerBegin(0, 80, true);
   timerAttachInterrupt(_Timer, &onTimer, true);
   timerAlarmWrite(_Timer, 1000, true);
-  timerAlarmEnable(_Timer);    
+   
 }
   
 CipedTronic::TimerCore* CipedTronic::TimerCore::Instance()
@@ -33,5 +34,13 @@ uint32_t CipedTronic::TimerCore::getTick()
 {
   return _TimerTick;
 }
+  void CipedTronic::TimerCore::start()
+  {
+    timerAlarmEnable(_Timer);   
+  }
+  void CipedTronic::TimerCore::stop()
+  {
+      timerAlarmDisable(_Timer);
+  }
 
 
