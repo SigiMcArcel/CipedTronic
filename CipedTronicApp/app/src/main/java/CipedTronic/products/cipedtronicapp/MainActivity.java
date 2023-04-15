@@ -5,10 +5,13 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import CipedTronic.products.cipedtronicapp.mcu.mcu.CipedTronicConfiguration;
 import CipedTronic.products.cipedtronicapp.mcu.mcu.CipedTronicMCU;
 
 import com.google.android.material.tabs.TabLayout;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 import androidx.viewpager.widget.ViewPager;
@@ -21,11 +24,13 @@ import com.example.cipedtronicapp.databinding.ActivityMainBinding;
 
 import android.content.Context;
 
+import java.util.Arrays;
+
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private CipedTronicMCU _CipedTronicMCU = CipedTronicMCU.getInstance();
-
+    int PERMISSION_ALL = 1;
 
     public static boolean hasPermissions(Context context, String... permissions) {
         if (context != null && permissions != null) {
@@ -42,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -51,35 +58,50 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setOffscreenPageLimit(0);
         TabLayout tabs = binding.tabs;
         tabs.setupWithViewPager(viewPager);
-
         viewPager.addOnPageChangeListener(listener);
 
-        int PERMISSION_ALL = 1;
         String[] permissions =
-            {
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.BLUETOOTH,
-                    Manifest.permission.BLUETOOTH_ADMIN,
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.BLUETOOTH_ADMIN,
-                    Manifest.permission.BLUETOOTH_SCAN,
-            };
+                {
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.BLUETOOTH,
+                        Manifest.permission.BLUETOOTH_ADMIN,
+                        Manifest.permission.BLUETOOTH_CONNECT,
+                        Manifest.permission.BLUETOOTH_ADMIN,
+                        Manifest.permission.BLUETOOTH_SCAN,
+                };
         if (!hasPermissions(this, permissions)) {
             ActivityCompat.requestPermissions(this, permissions, PERMISSION_ALL);
         }
 
-        SharedPreferences _Prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String _BluetothAddress = _Prefs.getString("bluetooth_Address","");
-        int pulsesPerRevolution =  Integer.parseInt(_Prefs.getString("pulse_per_revolution","1"));;
-        float wheelradius =  Float.parseFloat(_Prefs.getString("wheel_radius","1"));
-
-
-        _CipedTronicMCU.createDevice(getApplicationContext(),_BluetothAddress);
-        _CipedTronicMCU.setPulsesPerRevolution(pulsesPerRevolution);
-        _CipedTronicMCU.setWheelRadius(wheelradius);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_ALL) {
+            if (!Arrays.asList(grantResults).contains(PackageManager.PERMISSION_DENIED)) {
+
+                CipedTronicConfiguration config = new CipedTronicConfiguration();
+                SharedPreferences _Prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                String _BluetothAddress = _Prefs.getString("bluetooth_Address","");
+                config.BatteryLoadEnable = _Prefs.getBoolean("device_battery_load",false);
+                config.PowerSave = _Prefs.getBoolean("device_power_save",false);
+                config.PulsesPerRevolution = Integer.parseInt(_Prefs.getString("pulse_per_revolution","1"));
+                config.WheelRadius = Integer.parseInt(_Prefs.getString("wheel_radius","1"));
+                config.getFlags();
+                _CipedTronicMCU.setConfiguration(config,false);
+                _CipedTronicMCU.createDevice(getApplicationContext(),_BluetothAddress);
+                if(_BluetothAddress.equals(""))
+                {
+                    return;
+                }
+
+                _CipedTronicMCU.connectDevice();
+
+            }
+        }
+    }
     private ViewPager.OnPageChangeListener listener = new ViewPager.OnPageChangeListener() {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {

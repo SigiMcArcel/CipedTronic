@@ -4,40 +4,43 @@
     <PreferenceCategory app:title="@string/Bicycle_header">
 
         <EditTextPreference
+            android:defaultValue="18"
             app:key="pulse_per_revolution"
             app:persistent="true"
             app:title="@string/PulsesPerRevultion_title"
             app:useSimpleSummaryProvider="true"/>
 
         <EditTextPreference
+            android:defaultValue="355"
             app:key="wheel_radius"
             app:persistent="true"
             app:title="@string/radius_title"
             app:useSimpleSummaryProvider="true"/>
 
-        <CheckBoxPreference
-            app:key="device_light"
+        <SwitchPreference
+            app:key="device_battery_load"
             app:persistent="true"
-            app:title="light"
+            app:title="Battery load enable"
             app:useSimpleSummaryProvider="true"/>
 
-        <CheckBoxPreference
-            app:key="device_alarm"
+        <SwitchPreference
+            app:key="device_power_save"
             app:persistent="true"
-            app:title="alarm"
+            app:title="Power Save enable"
             app:useSimpleSummaryProvider="true"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Bluetooth">
-
         <EditTextPreference
-            android:defaultValue="Default value"
+            android:defaultValue=""
             android:key="bluetooth_Address"
             android:title="Bluetooth Address"
             app:persistent="true"
-            app:useSimpleSummaryProvider="true"/>
+            app:useSimpleSummaryProvider="true"
             android:selectable="false" />
     </PreferenceCategory>
-
+    <Preference
+        app:key="device_synchronize"
+        app:title="Synchronize"/>
 </PreferenceScreen>

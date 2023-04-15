@@ -73,6 +73,15 @@ public class BLEDevice extends Thread implements AutoCloseable{
         }
         public BLEDeviceCommand(
                 BLEDeviceCommandStates command,
+                Object param1
+
+        )
+        {
+            Param1 = param1;
+            Command = command;
+        }
+        public BLEDeviceCommand(
+                BLEDeviceCommandStates command,
                 Object param1,
                 Object param2,
                 Object param3,
@@ -172,6 +181,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
         Idle,
         Initialize,
         Close,
+        SetAddress,
         Connect,
         Connecting,
         Connected,
@@ -221,6 +231,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
         AlreadyDisconnected,
         ServiceNotFound,
         ServiceNotValid,
+        ServiceDiscoveryTimeout,
         CharacteristicNotFound,
         DescriptionNotFound,
         CouldNotConnectDevice,
@@ -252,7 +263,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
     }
 
     public static final UUID CCCD = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-    public static final int _RESTARTTIMEOUT = 5000;
+    public static final int _RESTARTTIMEOUT = 1000;
 
     private BluetoothManager _BluetoothManager;
     private BluetoothAdapter _BluetoothAdapter;
@@ -290,15 +301,18 @@ public class BLEDevice extends Thread implements AutoCloseable{
     private ArrayDeque<BLEDeviceCommand> _CommandQueue = new ArrayDeque<>();
     private boolean _AutoConnect = false;
 
+    private boolean _ConnectedFlag = false;
+    private boolean _DisconnectedFlag = false;
+
 
     public BLEDevice()
     {
         start();
     }
 
-    public void setOnBLEDeviceListener(OnBLEDeviceListener listener)
-    {
+    public void setOnBLEDeviceListener(OnBLEDeviceListener listener) {
         _Listener = listener;
+        _Listener.OnStatusChanged(_State);
     }
 
     public void setAutoConnect(boolean auto)
@@ -353,6 +367,14 @@ public class BLEDevice extends Thread implements AutoCloseable{
      */
     public void closeDevice() {
         BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.Close);
+        _CommandQueue.push(cmd);
+    }
+    /**
+     * Sets the BluetoothAddress
+     * The device will recreate
+     */
+    public void setAddress(String address) {
+        BLEDeviceCommand cmd = new BLEDeviceCommand(BLEDeviceCommandStates.SetAddress,address);
         _CommandQueue.push(cmd);
     }
     /**
@@ -476,7 +498,6 @@ public class BLEDevice extends Thread implements AutoCloseable{
             {
                 return BLEDeviceErrors.CouldNotConnectGatt;
             }
-
         }
         catch(SecurityException exp) {
             Log.e("BLEDevice", "connect " + exp.getMessage());
@@ -583,7 +604,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
         if (characteristic == null) {
             return BLEDeviceErrors.CharacteristicNotFound;
         }
-        characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+        characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
         characteristic.setValue(value);
         try{
             if(!_BluetoothGatt.writeCharacteristic(characteristic))
@@ -773,10 +794,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
                     _CommandState = BLEDeviceCommandStates.Error;
                     break;
                 }
-                _State = BLEDeviceStates.Disconnected;
-                if(_AutoConnect) {
-                    _CommandState = BLEDeviceCommandStates.Connect;
-                }
+                _CommandState = BLEDeviceCommandStates.Disconnected;
                 break;
             }
             case Close:
@@ -800,7 +818,13 @@ public class BLEDevice extends Thread implements AutoCloseable{
             }
             case Connecting:
             {
-                if(_ConnectTimeout.check(5000))
+                if(_ConnectedFlag)
+                {
+                    _ConnectedFlag = false;
+                    _CommandState = BLEDeviceCommandStates.Connected;
+                    break;
+                }
+                if(_ConnectTimeout.check(1000))
                 {
                     if(_AutoConnect)
                     {
@@ -817,6 +841,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 break;
             }
             case Connected: {
+                _ConnectedFlag = false;
                 _AutoConnectActive = false;
                 _CommandState = BLEDeviceCommandStates.DiscoverServices;
                 Log.e("BLEDevice", "Connected ");
@@ -856,7 +881,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 break;
             }
             case Disconnected: {
-                _State = BLEDeviceStates.Disconnected;
+               _State = BLEDeviceStates.Disconnected.Disconnected;
                 if(_ScanActive)
                 {
                     _CommandState = BLEDeviceCommandStates.ScanDevicesStart;
@@ -876,6 +901,11 @@ public class BLEDevice extends Thread implements AutoCloseable{
             }
             case DiscoveringServices:
             {
+                if(_ConnectTimeout.check(5000))
+                {
+                    _Error = BLEDeviceErrors.ServiceDiscoveryTimeout;
+                    _CommandState = BLEDeviceCommandStates.Error;
+                }
                 break;
             }
             case DiscoverServicesFinish: {
@@ -962,6 +992,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
                     _CommandState = BLEDeviceCommandStates.Error;
                     break;
                 }
+                Log.d("BLEDevice", "writeCharacter : ");
                 _Error = writeCharacter((UUID)_ActualCommand.Param1,(byte[])_ActualCommand.Param2);
                 if(_Error != BLEDeviceErrors.Ok){
                     _CommandState = BLEDeviceCommandStates.Error;
@@ -995,12 +1026,6 @@ public class BLEDevice extends Thread implements AutoCloseable{
             }
             case ScanDevices:
             {
-                if(_State == BLEDeviceStates.NotInitalized)
-                {
-                    _Error = BLEDeviceErrors.NotInitialized;
-                    _CommandState = BLEDeviceCommandStates.Error;
-                    break;
-                }
                 _ScanActive = true;
                 _LastConnectedState = _State;
                 if(_State == BLEDeviceStates.Connected)
@@ -1079,6 +1104,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
             }
             if(_LastCommandState != _CommandState){
                 Log.d("BLEDevice", "StatetChanged " + _CommandState.name());
+
                 _LastCommandState = _CommandState;
             }
         }
@@ -1089,9 +1115,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
            if(newState == BluetoothProfile.STATE_CONNECTED){
-               if(_CommandState == BLEDeviceCommandStates.Connecting) {
-                   _CommandState = BLEDeviceCommandStates.Connected;
-               }
+               _ConnectedFlag = true;
            }
            else
            {
@@ -1123,7 +1147,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
                         _CommandState = BLEDeviceCommandStates.EnableNotificictionFinish;
                     }
                     else if(_Error == BLEDeviceErrors.NotificationInQueue){
-                        ;
+                        Log.e("BLEDevice", "NotificationInQueue : ");
                     }
                     else{
                         _CommandState = BLEDeviceCommandStates.Error;

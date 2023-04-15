@@ -109,8 +109,8 @@ public class DeviceFragment extends Fragment {
                 edt.putString("bluetooth_Address",dev.getAddress());
                 edt.apply();
                 edt.commit();
-                String d = prefs.getString("pulseperrevolution","");
-                _VModel.setDeviceAddress(dev);
+
+                _VModel.createDevice(dev);
                 Snackbar.make(view, "bluetooth Address saved", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }

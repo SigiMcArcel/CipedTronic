@@ -10,34 +10,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/buttonCalibrate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="80dp"
-            android:text="Calibrate"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.945"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewInfo" />
 
         <TextView
             android:id="@+id/textViewDistance"
             android:layout_width="412dp"
             android:layout_height="158dp"
-            android:layout_marginTop="8dp"
             android:text="0.00"
             android:textAppearance="@style/TextAppearance.AppCompat.Display4"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewVelocity" />
+            app:layout_constraintTop_toBottomOf="@+id/AvgMax" />
 
         <TextView
             android:id="@+id/textViewInfo"
-            android:layout_width="412dp"
-            android:layout_height="230dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:layout_width="404dp"
+            android:layout_height="127dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewDistance" />
@@ -54,40 +43,89 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/buttonReset"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="80dp"
-            android:text="Reset"
+        <TextView
+            android:id="@+id/AvgMax"
+            android:layout_width="407dp"
+            android:layout_height="61dp"
+            android:text="TextView"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:fontFamily="sans-serif"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.074"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewInfo" />
+            app:layout_constraintTop_toBottomOf="@+id/textViewVelocity" />
 
-        <Button
-            android:id="@+id/button_load_enable"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="80dp"
-            android:text="Load Enable"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.452"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewInfo" />
-
-        <Button
-            android:id="@+id/buttonAlarm"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="Alarm"
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="406dp"
+            android:layout_height="72dp"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.074"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewInfo"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintTop_toBottomOf="@+id/textViewInfo">
+
+            <ImageView
+                android:id="@+id/imageViewMove"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/movinginactiv" />
+
+            <ImageView
+                android:id="@+id/imageViewBattery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/lowbatinactive" />
+
+            <ImageView
+                android:id="@+id/imageViewAlarm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/alarminactiv" />
+
+            <ImageView
+                android:id="@+id/imageViewLoad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/loadingnotenabled" />
+
+            <ImageView
+                android:id="@+id/imageViewPowerSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/powersaveinactive" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="61dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+
+            <Button
+                android:id="@+id/buttonReset"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Reset" />
+
+            <Button
+                android:id="@+id/buttonAlarm"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Alarm" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
