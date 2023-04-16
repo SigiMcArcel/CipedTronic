@@ -512,7 +512,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
             //occurs on invalid BLE address. does not used for scan
             if(_BluetoothGatt == null)
             {
-                return BLEDeviceErrors.CouldNotConnectDevice;
+                return BLEDeviceErrors.InvalidBLEAddress;
             }
             if(!_BluetoothGatt.connect())
             {
@@ -881,7 +881,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
                 break;
             }
             case Disconnected: {
-               _State = BLEDeviceStates.Disconnected.Disconnected;
+               _State = BLEDeviceStates.Disconnected;
                 if(_ScanActive)
                 {
                     _CommandState = BLEDeviceCommandStates.ScanDevicesStart;
