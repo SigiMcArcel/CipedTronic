@@ -1,10 +1,12 @@
 package CipedTronic.products.cipedtronicapp.ui.main;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 
@@ -55,7 +57,8 @@ public class DeviceFragment extends Fragment {
 
     }
 
-
+    ArrayAdapter<BLEScannedDevice> _ArrayAdapter;
+    List<BLEScannedDevice> _Devices;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,9 +72,9 @@ public class DeviceFragment extends Fragment {
             @Override
             public void onChanged(@Nullable List<BLEScannedDevice> devices) {
                 final ListView listv = binding.ListViewDevices;
-
-                ArrayAdapter<BLEScannedDevice> arrayAdapter = new ArrayAdapter<BLEScannedDevice>(getContext(),android.R.layout.simple_list_item_1,devices);
-                listv.setAdapter(arrayAdapter);
+                _Devices = devices;
+                _ArrayAdapter = new ArrayAdapter<BLEScannedDevice>(getContext(),android.R.layout.simple_list_item_1,devices);
+                listv.setAdapter(_ArrayAdapter);
                 binding.buttonSearchDevice.setEnabled(true);
             }
         });
@@ -96,29 +99,44 @@ public class DeviceFragment extends Fragment {
         final ListView listv = binding.ListViewDevices;
 
 
-         listv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView ls = (TextView) view;
                 Context hostActivity = getActivity();
+                AlertDialog.Builder adb = new AlertDialog.Builder(hostActivity);
+                adb.setTitle("Add Device");
+                adb.setMessage("Add Device");
+                final int positionToRemove = position;
+                adb.setNegativeButton("Cancel", null);
+                adb.setPositiveButton("Ok", new AlertDialog.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(hostActivity);
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(hostActivity);
 
-                SharedPreferences.Editor edt = prefs.edit();
-                BLEScannedDevice dev = (BLEScannedDevice) parent.getAdapter().getItem(position);
-                edt.putString("bluetooth_Address",dev.getAddress());
-                edt.apply();
-                edt.commit();
+                        SharedPreferences.Editor edt = prefs.edit();
+                        BLEScannedDevice dev = (BLEScannedDevice) parent.getAdapter().getItem(position);
+                        edt.putString("bluetooth_Address", dev.getAddress());
+                        edt.apply();
+                        edt.commit();
 
-                _VModel.createDevice(dev);
-                Snackbar.make(view, "bluetooth Address saved", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                        _VModel.createDevice(dev);
+                        Snackbar.make(view, "bluetooth Address saved", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+                        _Devices.remove(positionToRemove);
+                        _ArrayAdapter.notifyDataSetChanged();
+                    }
+                });
+
+                adb.show();
             }
-
-
         });
 
+
     }
+
+
 
     @Override
     public void onDestroy() {

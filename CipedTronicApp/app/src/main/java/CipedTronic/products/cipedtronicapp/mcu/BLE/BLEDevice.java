@@ -482,7 +482,7 @@ public class BLEDevice extends Thread implements AutoCloseable{
             try {
                 if(_BluetoothDeviceAddress == "")
                 {
-                    return BLEDeviceErrors.Ok;
+                    return BLEDeviceErrors.InvalidBLEAddress;
                 }
                 _BluetoothDevice = _BluetoothAdapter.getRemoteDevice(_BluetoothDeviceAddress);
             }
